@@ -25,6 +25,7 @@ function Heart({ left, delay, size }: { left: string; delay: number; size: numbe
 
 export default function Experience({ config }: { config: SiteConfig }) {
   const galleryItems = config.gallery.filter((item): item is NonNullable<typeof item> => !!item);
+  const videoItems = config.videos.filter((item): item is NonNullable<typeof item> => !!item);
 
   const scrollToSteps = () => {
     document.getElementById("perjalanan")?.scrollIntoView({ behavior: "smooth" });
@@ -103,6 +104,21 @@ export default function Experience({ config }: { config: SiteConfig }) {
           </div>
           <div className="mt-10">
             <Gallery items={galleryItems} />
+          </div>
+        </section>
+      )}
+
+      {/* Videos */}
+      {videoItems.length > 0 && (
+        <section className="relative py-16">
+          <div className="mx-auto max-w-2xl px-6 text-center">
+            <span className="font-mono text-xs uppercase tracking-[0.3em] text-gold">Video</span>
+            <h2 className="mt-3 font-display text-3xl font-bold text-white text-shadow-soft sm:text-4xl">
+              Bergerak, biar makin terasa
+            </h2>
+          </div>
+          <div className="mt-10">
+            <Gallery items={videoItems} />
           </div>
         </section>
       )}
