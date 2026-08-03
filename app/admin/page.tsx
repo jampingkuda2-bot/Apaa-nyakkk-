@@ -5,13 +5,17 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { DEFAULT_CONFIG, GALLERY_SLOTS, SiteConfig, StepData } from "@/lib/types";
 
+import { upload } from "@vercel/blob/client";
+
 async function uploadFile(file: File): Promise<string> {
-  const fd = new FormData();
-  fd.append("file", file);
-  const res = await fetch("/api/admin/upload", { method: "POST", body: fd });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || "Upload gagal");
-  return data.url as string;
+  if (file.size > 20 * 1024 * 1024) {
+    throw new Error("Ukuran foto maksimal 20MB.");
+  }
+  const blob = await upload(file.name, file, {
+    access: "public",
+    handleUploadUrl: "/api/admin/upload",
+  });
+  return blob.url;
 }
 
 function newStep(): StepData {
@@ -387,4 +391,4 @@ export default function AdminDashboard() {
       </div>
     </div>
   );
-                      }
+}
