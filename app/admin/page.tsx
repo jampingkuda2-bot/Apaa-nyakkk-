@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { DEFAULT_CONFIG, GALLERY_SLOTS, SiteConfig, StepData } from "@/lib/types";
+import { DEFAULT_CONFIG, GALLERY_SLOTS, VIDEO_SLOTS, SiteConfig, StepData } from "@/lib/types";
 
 import { upload } from "@vercel/blob/client";
 
@@ -101,6 +101,33 @@ export default function AdminDashboard() {
       const gallery = [...c.gallery];
       gallery[index] = null;
       return { ...c, gallery };
+    });
+  }
+
+  async function handleVideoFile(index: number, file: File) {
+    setBusySlot(`video-${index}`);
+    setError(null);
+    try {
+      const result = await uploadFile(file);
+      setConfig((c) => {
+        if (!c) return c;
+        const videos = [...c.videos];
+        videos[index] = result;
+        return { ...c, videos };
+      });
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Upload gagal");
+    } finally {
+      setBusySlot(null);
+    }
+  }
+
+  function removeVideo(index: number) {
+    setConfig((c) => {
+      if (!c) return c;
+      const videos = [...c.videos];
+      videos[index] = null;
+      return { ...c, videos };
     });
   }
 
@@ -291,29 +318,18 @@ export default function AdminDashboard() {
           </div>
         </section>
 
-        {/* Gallery */}
+        {/* Gallery (photos only) */}
         <section className="glass rounded-2xl p-6">
-          <h2 className="font-display text-lg font-semibold">Galeri ({GALLERY_SLOTS} slot)</h2>
+          <h2 className="font-display text-lg font-semibold">Galeri foto ({GALLERY_SLOTS} slot)</h2>
           <p className="mt-1 text-xs text-white/60">
-            Slot kosong tidak akan muncul di website. Bisa foto atau video (mp4), sesuka hati, 6–10 juga bisa.
+            Slot kosong tidak akan muncul di website. Isi sesuka hati, 6–10 foto juga bisa.
           </p>
           <div className="mt-4 grid grid-cols-3 gap-3 sm:grid-cols-5">
             {config.gallery.map((item, i) => (
               <div key={i} className="flex flex-col items-center gap-1.5">
                 <div className="relative aspect-square w-full overflow-hidden rounded-lg border border-white/20 bg-white/5">
                   {item ? (
-                    item.type === "video" ? (
-                      <video
-                        src={item.url}
-                        className="h-full w-full object-cover"
-                        muted
-                        loop
-                        autoPlay
-                        playsInline
-                      />
-                    ) : (
-                      <Image src={item.url} alt="" fill className="object-cover" />
-                    )
+                    <Image src={item.url} alt="" fill className="object-cover" />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center text-[10px] text-white/40">
                       Slot {i + 1}
@@ -325,7 +341,7 @@ export default function AdminDashboard() {
                     {busySlot === `gallery-${i}` ? "..." : item ? "Ganti" : "Isi"}
                     <input
                       type="file"
-                      accept="image/*,video/mp4,video/quicktime,video/webm"
+                      accept="image/*"
                       className="hidden"
                       onChange={(e) => {
                         const file = e.target.files?.[0];
@@ -336,6 +352,58 @@ export default function AdminDashboard() {
                   {item && (
                     <button
                       onClick={() => removeGalleryPhoto(i)}
+                      className="rounded-full border border-white/25 px-2 py-1 text-[10px] hover:bg-white/10"
+                    >
+                      Hapus
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Videos (separate from photo gallery) */}
+        <section className="glass rounded-2xl p-6">
+          <h2 className="font-display text-lg font-semibold">Video kenangan ({VIDEO_SLOTS} slot)</h2>
+          <p className="mt-1 text-xs text-white/60">
+            Khusus video (mp4/mov), auto-play tanpa suara di website. Maks 150MB per video.
+          </p>
+          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+            {config.videos.map((item, i) => (
+              <div key={i} className="flex flex-col items-center gap-1.5">
+                <div className="relative aspect-square w-full overflow-hidden rounded-lg border border-white/20 bg-white/5">
+                  {item ? (
+                    <video
+                      src={item.url}
+                      className="h-full w-full object-cover"
+                      muted
+                      loop
+                      autoPlay
+                      playsInline
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center text-[10px] text-white/40">
+                      Video {i + 1}
+                    </div>
+                  )}
+                </div>
+                <div className="flex gap-1">
+                  <label className="cursor-pointer rounded-full border border-white/25 px-2 py-1 text-[10px] hover:bg-white/10">
+                    {busySlot === `video-${i}` ? "..." : item ? "Ganti" : "Isi"}
+                    <input
+                      type="file"
+                      accept="video/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleVideoFile(i, file);
+                      }}
+                    />
+                  </label>
+                  {item && (
+                    <button
+                      onClick={() => removeVideo(i)}
                       className="rounded-full border border-white/25 px-2 py-1 text-[10px] hover:bg-white/10"
                     >
                       Hapus
@@ -405,3 +473,4 @@ export default function AdminDashboard() {
     </div>
   );
 }
+  
