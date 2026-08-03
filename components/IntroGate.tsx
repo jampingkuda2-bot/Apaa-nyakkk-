@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { createAudioContext, scheduleCelebrationChime } from "@/lib/sound";
 
 const TEASER_LINES = [
   "Psst...",
@@ -53,6 +54,15 @@ export default function IntroGate({
   function handleOpen() {
     if (!ready || opening) return;
     setOpening(true);
+    try {
+      const ctx = createAudioContext();
+      if (ctx) {
+        ctx.resume();
+        scheduleCelebrationChime(ctx, 1.15);
+      }
+    } catch {
+      // audio is a nice-to-have; ignore if unsupported
+    }
     window.setTimeout(onOpen, 1150);
   }
 
