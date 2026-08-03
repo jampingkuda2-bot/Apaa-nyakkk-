@@ -21,7 +21,7 @@ export default function Gallery({ items }: { items: MediaItem[] }) {
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true, amount: 0.4 }}
             transition={{ duration: 0.5, delay: (i % 6) * 0.06 }}
-            className="relative aspect-square overflow-hidden rounded-2xl border-2 border-white/60 shadow-lg transition hover:scale-[1.03] focus-visible:scale-[1.03]"
+            className="relative aspect-square overflow-hidden rounded-2xl border-2 border-white/60 shadow-lg transition-transform duration-200 ease-out hover:scale-[1.03] focus-visible:scale-[1.03] active:scale-[0.96]"
           >
             {item.type === "video" ? (
               <video
@@ -86,7 +86,7 @@ export default function Gallery({ items }: { items: MediaItem[] }) {
             </motion.div>
             <button
               onClick={() => setActive(null)}
-              className="absolute right-6 top-6 rounded-full bg-white/20 px-4 py-2 font-body text-sm text-white backdrop-blur"
+              className="absolute right-6 top-6 rounded-full bg-white/20 px-4 py-2 font-body text-sm text-white backdrop-blur transition-transform duration-150 active:scale-90"
               aria-label="Tutup"
             >
               Tutup ✕
