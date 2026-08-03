@@ -26,6 +26,8 @@ export async function POST(req: NextRequest) {
             "video/mp4",
             "video/quicktime",
             "video/webm",
+            "video/3gpp",
+            "video/x-matroska",
           ],
           addRandomSuffix: true,
           maximumSizeInBytes: 150 * 1024 * 1024,
