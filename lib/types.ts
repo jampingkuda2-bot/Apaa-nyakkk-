@@ -16,11 +16,13 @@ export type SiteConfig = {
   openingMessage: string;
   steps: StepData[];
   gallery: (MediaItem | null)[];
+  videos: (MediaItem | null)[];
   prizes: string[];
   spinsAllowed: number;
 };
 
 export const GALLERY_SLOTS = 10;
+export const VIDEO_SLOTS = 3;
 
 export const DEFAULT_CONFIG: SiteConfig = {
   recipientName: "Angel",
@@ -44,6 +46,7 @@ export const DEFAULT_CONFIG: SiteConfig = {
     },
   ],
   gallery: Array.from({ length: GALLERY_SLOTS }, () => null),
+  videos: Array.from({ length: VIDEO_SLOTS }, () => null),
   prizes: ["Astralune", "Astrele", "Megalodon", "Dark Megalodon", "Flame Tyran"],
   spinsAllowed: 1,
 };
