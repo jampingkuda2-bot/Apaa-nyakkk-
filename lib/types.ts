@@ -5,12 +5,17 @@ export type StepData = {
   photoUrl: string | null;
 };
 
+export type MediaItem = {
+  url: string;
+  type: "image" | "video";
+};
+
 export type SiteConfig = {
   recipientName: string;
   senderName: string;
   openingMessage: string;
   steps: StepData[];
-  gallery: (string | null)[];
+  gallery: (MediaItem | null)[];
   prizes: string[];
   spinsAllowed: number;
 };
