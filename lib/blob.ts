@@ -19,6 +19,16 @@ export async function getConfig(): Promise<SiteConfig> {
 }
 
 export async function saveConfig(config: SiteConfig): Promise<void> {
+  try {
+    const { blobs } = await list({ prefix: CONFIG_PATH, limit: 1 });
+    const existing = blobs.find((b) => b.pathname === CONFIG_PATH);
+    if (existing) {
+      await del(existing.url);
+    }
+  } catch (err) {
+    console.error("Failed to remove previous config blob (continuing anyway):", err);
+  }
+
   await put(CONFIG_PATH, JSON.stringify(config, null, 2), {
     access: "public",
     contentType: "application/json",
