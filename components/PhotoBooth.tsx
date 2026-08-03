@@ -120,7 +120,7 @@ export default function PhotoBooth() {
         {stage === "idle" && (
           <div className="flex h-full w-full flex-col items-center justify-center gap-2 px-6 text-center">
             <span className="text-4xl">📸</span>
-            <p className="text-sm text-white/70">Ambil satu foto buat aku, sekarang juga.</p>
+            <p className="text-sm text-white/70">Ambil satu foto buatku, sekarang sayanggg.</p>
           </div>
         )}
 
