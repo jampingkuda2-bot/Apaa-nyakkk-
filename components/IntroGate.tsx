@@ -16,7 +16,7 @@ const REQUIRED_TAPS = 3;
 const TAP_HINTS = [
   "Ketuk bintangnyaaa buat buka ✨",
   "Sekali lagiii dong...",
-  "Satu ketukan terakhirrr, gaskeun!",
+  "Satu ketukan terakhirrr ",
 ];
 
 function Twinkle({ top, left, delay }: { top: string; left: string; delay: number }) {
