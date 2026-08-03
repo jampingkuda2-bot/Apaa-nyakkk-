@@ -143,17 +143,17 @@ export default function BirthdayPopup({
           {recipientName}
         </motion.p>
         <p className="mt-4 text-sm leading-relaxed text-white/80">
-          Semoga tahun ini penuh hal-hal baik buat kamu. Masih ada kejutan lagi di bawah sana.
+          Semoga tahun ini banyak hal baik dateng ke kamu. Masih ada kejutan lain nunggu di bawah.
         </p>
 
         <motion.button
           onClick={onClose}
-          whileTap={{ scale: 0.95 }}
+          whileTap={{ scale: 0.93 }}
           animate={{ boxShadow: ["0 0 0px rgba(246,196,83,0.4)", "0 0 24px rgba(246,196,83,0.6)", "0 0 0px rgba(246,196,83,0.4)"] }}
           transition={{ boxShadow: { duration: 2, repeat: Infinity } }}
           className="mt-6 rounded-full bg-gold px-8 py-3 font-display font-semibold text-skynight"
         >
-          Lihat kejutannya ↓
+          Ayo lihat ↓
         </motion.button>
       </motion.div>
     </motion.div>
