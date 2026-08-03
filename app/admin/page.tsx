@@ -7,15 +7,17 @@ import { DEFAULT_CONFIG, GALLERY_SLOTS, SiteConfig, StepData } from "@/lib/types
 
 import { upload } from "@vercel/blob/client";
 
-async function uploadFile(file: File): Promise<string> {
-  if (file.size > 20 * 1024 * 1024) {
-    throw new Error("Ukuran foto maksimal 20MB.");
+async function uploadFile(file: File): Promise<{ url: string; type: "image" | "video" }> {
+  const isVideo = file.type.startsWith("video/");
+  const maxSize = isVideo ? 150 * 1024 * 1024 : 20 * 1024 * 1024;
+  if (file.size > maxSize) {
+    throw new Error(isVideo ? "Ukuran video maksimal 150MB." : "Ukuran foto maksimal 20MB.");
   }
   const blob = await upload(file.name, file, {
     access: "public",
     handleUploadUrl: "/api/admin/upload",
   });
-  return blob.url;
+  return { url: blob.url, type: isVideo ? "video" : "image" };
 }
 
 function newStep(): StepData {
@@ -66,8 +68,8 @@ export default function AdminDashboard() {
     setBusySlot(id);
     setError(null);
     try {
-      const url = await uploadFile(file);
-      updateStep(id, { photoUrl: url });
+      const result = await uploadFile(file);
+      updateStep(id, { photoUrl: result.url });
     } catch (e) {
       setError(e instanceof Error ? e.message : "Upload gagal");
     } finally {
@@ -79,11 +81,11 @@ export default function AdminDashboard() {
     setBusySlot(`gallery-${index}`);
     setError(null);
     try {
-      const url = await uploadFile(file);
+      const result = await uploadFile(file);
       setConfig((c) => {
         if (!c) return c;
         const gallery = [...c.gallery];
-        gallery[index] = url;
+        gallery[index] = result;
         return { ...c, gallery };
       });
     } catch (e) {
@@ -291,16 +293,27 @@ export default function AdminDashboard() {
 
         {/* Gallery */}
         <section className="glass rounded-2xl p-6">
-          <h2 className="font-display text-lg font-semibold">Galeri foto ({GALLERY_SLOTS} slot)</h2>
+          <h2 className="font-display text-lg font-semibold">Galeri ({GALLERY_SLOTS} slot)</h2>
           <p className="mt-1 text-xs text-white/60">
-            Slot kosong tidak akan muncul di website. Isi sesuka hati, 6–10 foto juga bisa.
+            Slot kosong tidak akan muncul di website. Bisa foto atau video (mp4), sesuka hati, 6–10 juga bisa.
           </p>
           <div className="mt-4 grid grid-cols-3 gap-3 sm:grid-cols-5">
-            {config.gallery.map((url, i) => (
+            {config.gallery.map((item, i) => (
               <div key={i} className="flex flex-col items-center gap-1.5">
                 <div className="relative aspect-square w-full overflow-hidden rounded-lg border border-white/20 bg-white/5">
-                  {url ? (
-                    <Image src={url} alt="" fill className="object-cover" />
+                  {item ? (
+                    item.type === "video" ? (
+                      <video
+                        src={item.url}
+                        className="h-full w-full object-cover"
+                        muted
+                        loop
+                        autoPlay
+                        playsInline
+                      />
+                    ) : (
+                      <Image src={item.url} alt="" fill className="object-cover" />
+                    )
                   ) : (
                     <div className="flex h-full w-full items-center justify-center text-[10px] text-white/40">
                       Slot {i + 1}
@@ -309,10 +322,10 @@ export default function AdminDashboard() {
                 </div>
                 <div className="flex gap-1">
                   <label className="cursor-pointer rounded-full border border-white/25 px-2 py-1 text-[10px] hover:bg-white/10">
-                    {busySlot === `gallery-${i}` ? "..." : url ? "Ganti" : "Isi"}
+                    {busySlot === `gallery-${i}` ? "..." : item ? "Ganti" : "Isi"}
                     <input
                       type="file"
-                      accept="image/*"
+                      accept="image/*,video/mp4,video/quicktime,video/webm"
                       className="hidden"
                       onChange={(e) => {
                         const file = e.target.files?.[0];
@@ -320,7 +333,7 @@ export default function AdminDashboard() {
                       }}
                     />
                   </label>
-                  {url && (
+                  {item && (
                     <button
                       onClick={() => removeGalleryPhoto(i)}
                       className="rounded-full border border-white/25 px-2 py-1 text-[10px] hover:bg-white/10"
