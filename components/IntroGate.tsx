@@ -5,18 +5,18 @@ import { motion, AnimatePresence } from "framer-motion";
 import { createAudioContext, scheduleCelebrationChime, playBlip } from "@/lib/sound";
 
 const TEASER_LINES = [
-  "Psst, Angel...",
-  "Sebelum kamu lanjut,",
-  "ada sesuatu yang udah aku siapin diam-diam.",
-  "Tapi ini gak akan terbuka semudah itu...",
-  "kamu harus bantu aku membukanya.",
+  "Psstt~ Angeeel...",
+  "Sebelooom kamu lanjuttt,",
+  "ada sesuatuuu yang udah aku siapin diam-diam loh 👀",
+  "tapi gak segampang itu bukanyaaa...",
+  "kamu kudu bantuin aku dulu yaaa~",
 ];
 
 const REQUIRED_TAPS = 3;
 const TAP_HINTS = [
-  "Ketuk bintangnya untuk membuka ✨",
-  "Sekali lagi...",
-  "Satu ketukan terakhir...",
+  "Ketuk bintangnyaaa buat buka ✨",
+  "Sekali lagiii dong...",
+  "Satu ketukan terakhirrr, gaskeun!",
 ];
 
 function Twinkle({ top, left, delay }: { top: string; left: string; delay: number }) {
@@ -138,6 +138,7 @@ export default function IntroGate({
           <motion.button
             key={`star-${bump}`}
             onClick={handleTap}
+            whileTap={{ scale: 0.85 }}
             initial={{ opacity: 0, scale: 0.5 }}
             animate={
               opening
