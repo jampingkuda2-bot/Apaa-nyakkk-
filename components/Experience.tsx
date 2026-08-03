@@ -5,6 +5,7 @@ import Sky from "./Sky";
 import StepJourney from "./StepJourney";
 import SpinWheel from "./SpinWheel";
 import Gallery from "./Gallery";
+import PhotoBooth from "./PhotoBooth";
 import { SiteConfig } from "@/lib/types";
 
 function Heart({ left, delay, size }: { left: string; delay: number; size: number }) {
@@ -123,6 +124,17 @@ export default function Experience({ config }: { config: SiteConfig }) {
           </div>
         </section>
       )}
+
+      {/* Photo booth */}
+      <section className="relative flex flex-col items-center px-6 py-16">
+        <span className="font-mono text-xs uppercase tracking-[0.3em] text-gold">Balik dong</span>
+        <h2 className="mt-3 max-w-sm text-center font-display text-3xl font-bold text-white text-shadow-soft sm:text-4xl">
+          Kirim satu senyum buat aku
+        </h2>
+        <div className="mt-10 w-full">
+          <PhotoBooth />
+        </div>
+      </section>
 
       {/* Spin wheel */}
       <section className="relative flex flex-col items-center px-6 py-24">
