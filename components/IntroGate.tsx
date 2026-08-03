@@ -5,10 +5,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { createAudioContext, scheduleCelebrationChime, playBlip } from "@/lib/sound";
 
 const TEASER_LINES = [
-  "Psstt~ Angeeel...",
+  "Psstt~ sayaaang...",
   "Sebelooom kamu lanjuttt,",
   "ada sesuatuuu yang udah aku siapin diam-diam loh 👀",
-  "tapi gak segampang itu bukanyaaa...",
+  "tapi ga segampang itu bukanyaaa...",
   "kamu kudu bantuin aku dulu yaaa~",
 ];
 
