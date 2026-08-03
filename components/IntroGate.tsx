@@ -1,13 +1,22 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { createAudioContext, scheduleCelebrationChime } from "@/lib/sound";
+import { createAudioContext, scheduleCelebrationChime, playBlip } from "@/lib/sound";
 
 const TEASER_LINES = [
-  "Psst...",
-  "Ada sesuatu yang udah aku siapin,",
-  "khusus buat kamu, malam ini.",
+  "Psst, Angel...",
+  "Sebelum kamu lanjut,",
+  "ada sesuatu yang udah aku siapin diam-diam.",
+  "Tapi ini gak akan terbuka semudah itu...",
+  "kamu harus bantu aku membukanya.",
+];
+
+const REQUIRED_TAPS = 3;
+const TAP_HINTS = [
+  "Ketuk bintangnya untuk membuka ✨",
+  "Sekali lagi...",
+  "Satu ketukan terakhir...",
 ];
 
 function Twinkle({ top, left, delay }: { top: string; left: string; delay: number }) {
@@ -26,7 +35,7 @@ function ShootingStar() {
       style={{ top: "16%", left: "-15%" }}
       initial={{ x: 0, y: 0, opacity: 0 }}
       animate={{ x: "130vw", y: "35vh", opacity: [0, 1, 1, 0] }}
-      transition={{ duration: 1.5, delay: 2.6, ease: "easeIn" }}
+      transition={{ duration: 1.5, delay: 3.4, ease: "easeIn" }}
     />
   );
 }
@@ -40,30 +49,46 @@ export default function IntroGate({
 }) {
   const [lineIndex, setLineIndex] = useState(0);
   const [ready, setReady] = useState(false);
+  const [tapCount, setTapCount] = useState(0);
+  const [bump, setBump] = useState(0);
   const [opening, setOpening] = useState(false);
+  const audioCtxRef = useRef<AudioContext | null>(null);
 
   useEffect(() => {
     if (lineIndex < TEASER_LINES.length) {
-      const t = setTimeout(() => setLineIndex((i) => i + 1), 1700);
+      const t = setTimeout(() => setLineIndex((i) => i + 1), 1900);
       return () => clearTimeout(t);
     }
     const t = setTimeout(() => setReady(true), 500);
     return () => clearTimeout(t);
   }, [lineIndex]);
 
-  function handleOpen() {
-    if (!ready || opening) return;
-    setOpening(true);
-    try {
-      const ctx = createAudioContext();
-      if (ctx) {
-        ctx.resume();
-        scheduleCelebrationChime(ctx, 1.15);
-      }
-    } catch {
-      // audio is a nice-to-have; ignore if unsupported
+  function getAudioCtx() {
+    if (!audioCtxRef.current) {
+      audioCtxRef.current = createAudioContext();
     }
-    window.setTimeout(onOpen, 1150);
+    return audioCtxRef.current;
+  }
+
+  function handleTap() {
+    if (!ready || opening) return;
+    const nextCount = tapCount + 1;
+
+    const ctx = getAudioCtx();
+    if (ctx) {
+      ctx.resume();
+      if (nextCount < REQUIRED_TAPS) playBlip(ctx, 620 + nextCount * 160);
+    }
+
+    if (nextCount >= REQUIRED_TAPS) {
+      setOpening(true);
+      if (ctx) scheduleCelebrationChime(ctx, 1.15);
+      window.setTimeout(onOpen, 1150);
+      return;
+    }
+
+    setTapCount(nextCount);
+    setBump((b) => b + 1);
   }
 
   return (
@@ -91,8 +116,7 @@ export default function IntroGate({
 
       {!ready && <ShootingStar />}
 
-      {/* teaser lines */}
-      <div className="relative z-10 flex h-20 items-center justify-center">
+      <div className="relative z-10 flex h-24 items-center justify-center">
         <AnimatePresence mode="wait">
           {!ready && lineIndex < TEASER_LINES.length && (
             <motion.p
@@ -109,33 +133,32 @@ export default function IntroGate({
         </AnimatePresence>
       </div>
 
-      {/* star */}
       <AnimatePresence>
         {ready && (
           <motion.button
-            key="star"
-            onClick={handleOpen}
+            key={`star-${bump}`}
+            onClick={handleTap}
             initial={{ opacity: 0, scale: 0.5 }}
             animate={
               opening
                 ? { scale: 45, opacity: 0 }
                 : {
                     opacity: 1,
-                    scale: [1, 1.15, 1],
+                    scale: [1 + tapCount * 0.08, 1.18 + tapCount * 0.08, 1 + tapCount * 0.08],
                     boxShadow: [
-                      "0 0 40px 10px rgba(246,196,83,0.35)",
-                      "0 0 70px 22px rgba(246,196,83,0.55)",
-                      "0 0 40px 10px rgba(246,196,83,0.35)",
+                      `0 0 ${40 + tapCount * 18}px ${10 + tapCount * 6}px rgba(246,196,83,${0.35 + tapCount * 0.15})`,
+                      `0 0 ${75 + tapCount * 18}px ${24 + tapCount * 6}px rgba(246,196,83,${0.6 + tapCount * 0.15})`,
+                      `0 0 ${40 + tapCount * 18}px ${10 + tapCount * 6}px rgba(246,196,83,${0.35 + tapCount * 0.15})`,
                     ],
                   }
             }
             transition={
               opening
                 ? { duration: 1, ease: "easeIn" }
-                : { duration: 2.6, repeat: Infinity, ease: "easeInOut" }
+                : { duration: 2, repeat: Infinity, ease: "easeInOut" }
             }
             className="relative z-10 flex h-20 w-20 items-center justify-center rounded-full bg-gold"
-            aria-label="Buka kejutannya"
+            aria-label="Ketuk bintang"
           >
             <svg width="32" height="32" viewBox="0 0 24 24" fill="#0B2A4A">
               <path d="M12 2l2.6 6.9L22 11l-7.4 2.1L12 20l-2.6-6.9L2 11l7.4-2.1L12 2z" />
@@ -144,23 +167,24 @@ export default function IntroGate({
         )}
       </AnimatePresence>
 
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         {ready && !opening && (
           <motion.div
+            key={tapCount}
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
-            transition={{ delay: 0.3, duration: 0.8 }}
+            transition={{ duration: 0.5 }}
           >
             <p className="mt-8 font-mono text-xs uppercase tracking-[0.35em] text-white/50">
               Untuk {recipientName}
             </p>
             <motion.p
               animate={{ opacity: [0.5, 1, 0.5] }}
-              transition={{ duration: 2, repeat: Infinity }}
+              transition={{ duration: 1.8, repeat: Infinity }}
               className="mt-4 font-body text-sm text-gold"
             >
-              Ketuk bintangnya untuk membuka ✨
+              {TAP_HINTS[tapCount]}
             </motion.p>
           </motion.div>
         )}
