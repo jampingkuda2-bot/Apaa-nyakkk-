@@ -16,9 +16,19 @@ export async function POST(req: NextRequest) {
       request: req,
       onBeforeGenerateToken: async () => {
         return {
-          allowedContentTypes: ["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif", "image/gif"],
+          allowedContentTypes: [
+            "image/jpeg",
+            "image/png",
+            "image/webp",
+            "image/heic",
+            "image/heif",
+            "image/gif",
+            "video/mp4",
+            "video/quicktime",
+            "video/webm",
+          ],
           addRandomSuffix: true,
-          maximumSizeInBytes: 20 * 1024 * 1024,
+          maximumSizeInBytes: 150 * 1024 * 1024,
         };
       },
       onUploadCompleted: async () => {
