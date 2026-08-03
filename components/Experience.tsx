@@ -75,19 +75,20 @@ export default function Experience({ config }: { config: SiteConfig }) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.8, delay: 1.1 }}
+          whileTap={{ scale: 0.94 }}
           onClick={scrollToSteps}
-          className="mt-10 rounded-full border border-white/50 bg-white/10 px-8 py-3 font-body text-sm text-white backdrop-blur transition hover:bg-white/20"
+          className="mt-10 rounded-full border border-white/50 bg-white/10 px-8 py-3 font-body text-sm text-white backdrop-blur transition-colors duration-200 hover:bg-white/20"
         >
-          Mulai perjalanan ↓
+          Ayo, buka pelan-pelan ↓
         </motion.button>
       </section>
 
       {/* Steps */}
       <section id="perjalanan" className="relative py-10">
         <div className="mx-auto max-w-2xl px-6 text-center">
-          <span className="font-mono text-xs uppercase tracking-[0.3em] text-gold">Perjalanan Kita</span>
+          <span className="font-mono text-xs uppercase tracking-[0.3em] text-gold">Perjalanan kita</span>
           <h2 className="mt-3 font-display text-3xl font-bold text-white text-shadow-soft sm:text-4xl">
-            Setiap langkah, aku ingat betul
+            Ini semua masih aku inget jelas
           </h2>
         </div>
         <StepJourney steps={config.steps} />
@@ -99,7 +100,7 @@ export default function Experience({ config }: { config: SiteConfig }) {
           <div className="mx-auto max-w-2xl px-6 text-center">
             <span className="font-mono text-xs uppercase tracking-[0.3em] text-gold">Galeri</span>
             <h2 className="mt-3 font-display text-3xl font-bold text-white text-shadow-soft sm:text-4xl">
-              Kepingan kenangan lainnya
+              Beberapa kenangan lain juga
             </h2>
           </div>
           <div className="mt-10">
@@ -114,7 +115,7 @@ export default function Experience({ config }: { config: SiteConfig }) {
           <div className="mx-auto max-w-2xl px-6 text-center">
             <span className="font-mono text-xs uppercase tracking-[0.3em] text-gold">Video</span>
             <h2 className="mt-3 font-display text-3xl font-bold text-white text-shadow-soft sm:text-4xl">
-              Bergerak, biar makin terasa
+              Ini gak cukup kalau cuma difoto
             </h2>
           </div>
           <div className="mt-10">
@@ -125,12 +126,12 @@ export default function Experience({ config }: { config: SiteConfig }) {
 
       {/* Spin wheel */}
       <section className="relative flex flex-col items-center px-6 py-24">
-        <span className="font-mono text-xs uppercase tracking-[0.3em] text-gold">Hadiah untukmu</span>
+        <span className="font-mono text-xs uppercase tracking-[0.3em] text-gold">Buat kamu</span>
         <h2 className="mt-3 max-w-lg text-center font-display text-3xl font-bold text-white text-shadow-soft sm:text-4xl">
-          Sekarang giliranmu, putar bintangnya
+          Giliran kamu sekarang, puter bintangnya
         </h2>
         <p className="mt-3 max-w-sm text-center text-sm text-white/75">
-          Satu putaran, satu kejutan. Semua hasilnya nyata untukmu.
+          Sekali puter, satu kejutan buat kamu.
         </p>
         <div className="mt-12">
           <SpinWheel prizes={config.prizes} />
@@ -143,7 +144,7 @@ export default function Experience({ config }: { config: SiteConfig }) {
           Selamat ulang tahun, {config.recipientName}.
         </p>
         <p className="mt-2 font-mono text-xs text-white/50">
-          dibuat dengan sepenuh hati oleh {config.senderName}
+          dibikin sepenuh hati sama {config.senderName}
         </p>
       </footer>
     </main>
