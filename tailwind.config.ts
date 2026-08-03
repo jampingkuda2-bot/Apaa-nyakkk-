@@ -6,10 +6,10 @@ const config: Config = {
     extend: {
       colors: {
         dawn: "#FDF6EC",
-        skyhigh: "#8FD3F4",
-        skymid: "#4FA9E0",
-        skydeep: "#1E5C97",
-        skynight: "#0B2A4A",
+        skyhigh: "#A7E0FB",
+        skymid: "#5FB2E8",
+        skydeep: "#2E74B5",
+        skynight: "#123A5E",
         gold: "#F6C453",
         blush: "#FFD6E0",
         cloud: "#FFFFFF",
