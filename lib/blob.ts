@@ -23,7 +23,6 @@ export async function saveConfig(config: SiteConfig): Promise<void> {
     access: "public",
     contentType: "application/json",
     addRandomSuffix: false,
-    allowOverwrite: true,
   });
 }
 
