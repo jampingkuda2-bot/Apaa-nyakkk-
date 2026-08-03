@@ -22,7 +22,7 @@ export type SiteConfig = {
 };
 
 export const GALLERY_SLOTS = 10;
-export const VIDEO_SLOTS = 6;
+export const VIDEO_SLOTS = 10;
 
 export const DEFAULT_CONFIG: SiteConfig = {
   recipientName: "Angel",
