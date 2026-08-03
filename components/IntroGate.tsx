@@ -5,18 +5,18 @@ import { motion, AnimatePresence } from "framer-motion";
 import { createAudioContext, scheduleCelebrationChime, playBlip } from "@/lib/sound";
 
 const TEASER_LINES = [
-  "Psstt~ sayaaang...",
-  "Sebelooom kamu lanjuttt,",
+  "sayaaang...",
+  "Sebelumm kamu lanjuttt,",
   "ada sesuatuuu yang udah aku siapin diam-diam loh 👀",
   "tapi ga segampang itu bukanyaaa...",
-  "kamu kudu bantuin aku dulu yaaa~",
+  "kamu sabarr dulu yaaa~",
 ];
 
 const REQUIRED_TAPS = 3;
 const TAP_HINTS = [
   "Ketuk bintangnyaaa buat buka ✨",
   "Sekali lagiii dong...",
-  "Satu ketukan terakhirrr, gaskeun!",
+  "Satu ketukan terakhirrr, sabarr nyakk pesekkk",
 ];
 
 function Twinkle({ top, left, delay }: { top: string; left: string; delay: number }) {
