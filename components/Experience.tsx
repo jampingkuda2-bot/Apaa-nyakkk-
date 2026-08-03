@@ -24,7 +24,7 @@ function Heart({ left, delay, size }: { left: string; delay: number; size: numbe
 }
 
 export default function Experience({ config }: { config: SiteConfig }) {
-  const galleryPhotos = config.gallery.filter((p): p is string => !!p);
+  const galleryItems = config.gallery.filter((item): item is NonNullable<typeof item> => !!item);
 
   const scrollToSteps = () => {
     document.getElementById("perjalanan")?.scrollIntoView({ behavior: "smooth" });
@@ -52,11 +52,20 @@ export default function Experience({ config }: { config: SiteConfig }) {
           Untuk seseorang di langitku
         </motion.span>
 
+        <motion.h2
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.1 }}
+          className="mt-3 font-display text-lg font-semibold uppercase tracking-[0.15em] text-white/90 sm:text-xl"
+        >
+          Selamat Ulang Tahun
+        </motion.h2>
+
         <motion.h1
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 1, delay: 0.2 }}
-          className="mt-4 font-script text-7xl text-white text-shadow-soft sm:text-8xl"
+          className="mt-2 font-script text-7xl text-white text-shadow-soft sm:text-8xl"
         >
           {config.recipientName}
         </motion.h1>
@@ -93,7 +102,7 @@ export default function Experience({ config }: { config: SiteConfig }) {
       </section>
 
       {/* Gallery */}
-      {galleryPhotos.length > 0 && (
+      {galleryItems.length > 0 && (
         <section className="relative py-16">
           <div className="mx-auto max-w-2xl px-6 text-center">
             <span className="font-mono text-xs uppercase tracking-[0.3em] text-gold">Galeri</span>
@@ -102,7 +111,7 @@ export default function Experience({ config }: { config: SiteConfig }) {
             </h2>
           </div>
           <div className="mt-10">
-            <Gallery photos={galleryPhotos} />
+            <Gallery items={galleryItems} />
           </div>
         </section>
       )}
