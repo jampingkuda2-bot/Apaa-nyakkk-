@@ -115,7 +115,7 @@ export default function Experience({ config }: { config: SiteConfig }) {
           <div className="mx-auto max-w-2xl px-6 text-center">
             <span className="font-mono text-xs uppercase tracking-[0.3em] text-gold">Video</span>
             <h2 className="mt-3 font-display text-3xl font-bold text-white text-shadow-soft sm:text-4xl">
-              Ini gak cukup kalau cuma difoto
+              Ini ga cukup kalau cuma difoto
             </h2>
           </div>
           <div className="mt-10">
