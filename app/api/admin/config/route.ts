@@ -16,6 +16,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Data tidak valid." }, { status: 400 });
   }
 
-  await saveConfig(body);
-  return NextResponse.json({ success: true });
+  try {
+    await saveConfig(body);
+    return NextResponse.json({ success: true });
+  } catch (err) {
+    console.error("saveConfig failed:", err);
+    const message = err instanceof Error ? err.message : "Gagal menyimpan ke penyimpanan.";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
 }
