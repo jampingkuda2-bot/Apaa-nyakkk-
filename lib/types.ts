@@ -50,3 +50,21 @@ export const DEFAULT_CONFIG: SiteConfig = {
   prizes: ["Astralune", "Astrele", "Megalodon", "Dark Megalodon", "Flame Tyran"],
   spinsAllowed: 1,
 };
+
+// Old saved configs may have fewer gallery/video slots than the current
+// GALLERY_SLOTS / VIDEO_SLOTS constants (e.g. if we increase the slot count
+// later). This pads them out so existing saved data always gets the newest
+// slot count instead of staying stuck at whatever it was first saved with.
+export function normalizeConfig(data: Partial<SiteConfig>): SiteConfig {
+  const merged: SiteConfig = { ...DEFAULT_CONFIG, ...data };
+
+  const gallery = Array.isArray(data.gallery) ? [...data.gallery] : [];
+  while (gallery.length < GALLERY_SLOTS) gallery.push(null);
+  merged.gallery = gallery;
+
+  const videos = Array.isArray(data.videos) ? [...data.videos] : [];
+  while (videos.length < VIDEO_SLOTS) videos.push(null);
+  merged.videos = videos;
+
+  return merged;
+}
