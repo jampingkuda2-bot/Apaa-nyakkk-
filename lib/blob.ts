@@ -1,5 +1,5 @@
 import { put, list, del } from "@vercel/blob";
-import { DEFAULT_CONFIG, SiteConfig } from "./types";
+import { DEFAULT_CONFIG, SiteConfig, normalizeConfig } from "./types";
 
 const CONFIG_PATH = "data/config.json";
 
@@ -10,8 +10,8 @@ export async function getConfig(): Promise<SiteConfig> {
     if (!match) return DEFAULT_CONFIG;
     const res = await fetch(match.url, { cache: "no-store" });
     if (!res.ok) return DEFAULT_CONFIG;
-    const data = (await res.json()) as SiteConfig;
-    return { ...DEFAULT_CONFIG, ...data };
+    const data = (await res.json()) as Partial<SiteConfig>;
+    return normalizeConfig(data);
   } catch (err) {
     console.error("getConfig failed, falling back to default:", err);
     return DEFAULT_CONFIG;
