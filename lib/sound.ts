@@ -34,6 +34,10 @@ function tone(
   osc.stop(startTime + duration + 0.05);
 }
 
+export function playBlip(ctx: AudioContext, freq: number) {
+  tone(ctx, freq, ctx.currentTime, 0.15, 0.07, "sine");
+}
+
 /**
  * Schedules a short "reveal" chime: a rising anticipation sweep, a bright
  * major chord ("ta-da"), and a sprinkle of high sparkle twinkles.
