@@ -1,14 +1,26 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { MediaItem } from "@/lib/types";
+import { createAudioContext, playWhoosh } from "@/lib/sound";
 
 export default function Gallery({ items }: { items: MediaItem[] }) {
   const [active, setActive] = useState<MediaItem | null>(null);
+  const audioCtxRef = useRef<AudioContext | null>(null);
 
   if (items.length === 0) return null;
+
+  function openItem(item: MediaItem) {
+    if (!audioCtxRef.current) audioCtxRef.current = createAudioContext();
+    const ctx = audioCtxRef.current;
+    if (ctx) {
+      ctx.resume();
+      playWhoosh(ctx);
+    }
+    setActive(item);
+  }
 
   return (
     <div className="mx-auto max-w-4xl px-6">
@@ -16,7 +28,7 @@ export default function Gallery({ items }: { items: MediaItem[] }) {
         {items.map((item, i) => (
           <motion.button
             key={item.url}
-            onClick={() => setActive(item)}
+            onClick={() => openItem(item)}
             initial={{ opacity: 0, scale: 0.85 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true, amount: 0.4 }}
