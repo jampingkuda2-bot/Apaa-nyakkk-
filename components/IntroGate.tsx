@@ -10,7 +10,7 @@ const TEASER_LINES = [
   "Sebelummm lanjuttt,",
   "ada sesuatuuu yang udah aku siapin diam-diam loh 👀",
   "tapi sabarr sekkk...",
-  "kamu kudu sabarf benn ga pesekk~",
+  "kamu sabarrr benn gaaa pesekk~",
 ];
 
 const REQUIRED_TAPS = 3;
