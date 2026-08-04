@@ -1,9 +1,10 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { createAudioContext, scheduleWheelTicks, scheduleWinJingle } from "@/lib/sound";
 import { vibrate } from "@/lib/haptics";
+import { Prize } from "@/lib/types";
 
 const PALETTE = ["#A7E0FB", "#F6C453", "#FFD6E0", "#5FB2E8", "#2E74B5"];
 
@@ -19,24 +20,33 @@ function arcPath(cx: number, cy: number, r: number, startAngle: number, endAngle
   return `M ${cx} ${cy} L ${start.x} ${start.y} A ${r} ${r} 0 ${largeArc} 0 ${end.x} ${end.y} Z`;
 }
 
-export default function SpinWheel({ prizes }: { prizes: string[] }) {
-  const n = prizes.length;
+export default function SpinWheel({ prizes }: { prizes: Prize[] }) {
+  const labels = useMemo(() => prizes.map((p) => p.label), [prizes]);
+  const n = labels.length;
   const segmentAngle = 360 / n;
   const [rotation, setRotation] = useState(0);
   const [spinning, setSpinning] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [history, setHistory] = useState<string[]>([]);
+  const [remaining, setRemaining] = useState<number | null>(null);
+  const [limitMsg, setLimitMsg] = useState<string | null>(null);
   const rotationRef = useRef(0);
   const audioCtxRef = useRef<AudioContext | null>(null);
 
   const SPIN_DURATION = 4.2;
-
   const size = 320;
   const radius = size / 2;
 
+  useEffect(() => {
+    fetch("/api/spin")
+      .then((r) => r.json())
+      .then((d) => setRemaining(typeof d.remaining === "number" ? d.remaining : null))
+      .catch(() => setRemaining(null));
+  }, []);
+
   const segments = useMemo(
     () =>
-      prizes.map((label, i) => {
+      labels.map((label, i) => {
         const startAngle = i * segmentAngle;
         const endAngle = (i + 1) * segmentAngle;
         const mid = startAngle + segmentAngle / 2;
@@ -47,15 +57,41 @@ export default function SpinWheel({ prizes }: { prizes: string[] }) {
           mid,
         };
       }),
-    [prizes, segmentAngle, radius]
+    [labels, segmentAngle, radius]
   );
 
-  function handleSpin() {
+  async function handleSpin() {
     if (spinning || n === 0) return;
+    if (remaining !== null && remaining <= 0) {
+      setLimitMsg("Waduh, jatah puterannya udah abis semua.");
+      return;
+    }
+
     setSpinning(true);
     setResult(null);
+    setLimitMsg(null);
 
-    const winnerIndex = Math.floor(Math.random() * n);
+    let winnerIndex = 0;
+    let prizeLabel = "";
+
+    try {
+      const res = await fetch("/api/spin", { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) {
+        setSpinning(false);
+        setLimitMsg(data.error || "Gagal memutar, coba lagi ya.");
+        if (typeof data.remaining === "number") setRemaining(data.remaining);
+        return;
+      }
+      winnerIndex = data.index;
+      prizeLabel = data.prize;
+      if (typeof data.remaining === "number") setRemaining(data.remaining);
+    } catch {
+      setSpinning(false);
+      setLimitMsg("Koneksinya lagi bermasalah, coba lagi ya.");
+      return;
+    }
+
     const target = (360 - (winnerIndex * segmentAngle + segmentAngle / 2) + 360) % 360;
     const current = rotationRef.current % 360;
     const forwardDelta = ((target - current) % 360 + 360) % 360;
@@ -76,8 +112,8 @@ export default function SpinWheel({ prizes }: { prizes: string[] }) {
 
     window.setTimeout(() => {
       setSpinning(false);
-      setResult(prizes[winnerIndex]);
-      setHistory((h) => [prizes[winnerIndex], ...h].slice(0, 5));
+      setResult(prizeLabel);
+      setHistory((h) => [prizeLabel, ...h].slice(0, 5));
       vibrate([30, 50, 90]);
     }, SPIN_DURATION * 1000);
   }
@@ -85,7 +121,6 @@ export default function SpinWheel({ prizes }: { prizes: string[] }) {
   return (
     <div className="flex flex-col items-center gap-8">
       <div className="relative" style={{ width: size, height: size }}>
-        {/* pointer */}
         <div className="absolute left-1/2 -top-3 z-20 -translate-x-1/2">
           <svg width="28" height="34" viewBox="0 0 28 34" fill="none">
             <path d="M14 34L0 6C0 2.68629 2.68629 0 6 0H22C25.3137 0 28 2.68629 28 6L14 34Z" fill="#F6C453" />
@@ -135,6 +170,11 @@ export default function SpinWheel({ prizes }: { prizes: string[] }) {
         {spinning ? "Berputar..." : "Putar sekarang"}
       </button>
 
+      {remaining !== null && (
+        <p className="-mt-4 text-xs text-white/50">Sisa puteran: {remaining}</p>
+      )}
+      {limitMsg && <p className="text-sm text-blush">{limitMsg}</p>}
+
       {result && !spinning && (
         <motion.div
           initial={{ opacity: 0, y: 10, scale: 0.9 }}
@@ -153,4 +193,4 @@ export default function SpinWheel({ prizes }: { prizes: string[] }) {
       )}
     </div>
   );
-}
+        }
