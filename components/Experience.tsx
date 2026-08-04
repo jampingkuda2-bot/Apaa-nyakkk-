@@ -6,6 +6,7 @@ import StepJourney from "./StepJourney";
 import SpinWheel from "./SpinWheel";
 import Gallery from "./Gallery";
 import PhotoBooth from "./PhotoBooth";
+import MessageBox from "./MessageBox";
 import { SiteConfig } from "@/lib/types";
 
 function Heart({ left, delay, size }: { left: string; delay: number; size: number }) {
@@ -136,6 +137,17 @@ export default function Experience({ config }: { config: SiteConfig }) {
         </div>
       </section>
 
+      {/* Written reply */}
+      <section className="relative flex flex-col items-center px-6 py-16">
+        <span className="font-mono text-xs uppercase tracking-[0.3em] text-gold">Atau</span>
+        <h2 className="mt-3 max-w-sm text-center font-display text-3xl font-bold text-white text-shadow-soft sm:text-4xl">
+          Tulis aja balasannya
+        </h2>
+        <div className="mt-10 w-full">
+          <MessageBox />
+        </div>
+      </section>
+
       {/* Spin wheel */}
       <section className="relative flex flex-col items-center px-6 py-24">
         <span className="font-mono text-xs uppercase tracking-[0.3em] text-gold">Buat kamu</span>
@@ -161,4 +173,4 @@ export default function Experience({ config }: { config: SiteConfig }) {
       </footer>
     </main>
   );
-        }
+}
