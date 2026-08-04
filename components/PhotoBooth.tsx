@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createAudioContext, scheduleWinJingle } from "@/lib/sound";
+import { vibrate } from "@/lib/haptics";
 
 type Stage = "idle" | "camera" | "preview" | "sending" | "sent" | "error";
 
@@ -9,6 +11,7 @@ export default function PhotoBooth() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const audioCtxRef = useRef<AudioContext | null>(null);
 
   const [stage, setStage] = useState<Stage>("idle");
   const [photo, setPhoto] = useState<string | null>(null);
@@ -43,7 +46,15 @@ export default function PhotoBooth() {
     }
   }
 
-  function resizeToBase64(source: CanvasImageSource, sourceW: number, sourceH: number): string {
+  // mirror=true flips the drawn image horizontally, so a mirrored live
+  // preview (which feels natural for a selfie) results in a captured photo
+  // that matches exactly what she saw — no more "moves the opposite way".
+  function resizeToBase64(
+    source: CanvasImageSource,
+    sourceW: number,
+    sourceH: number,
+    mirror: boolean
+  ): string {
     const maxW = 1000;
     const scale = Math.min(1, maxW / sourceW);
     const w = Math.round(sourceW * scale) || 1;
@@ -54,14 +65,21 @@ export default function PhotoBooth() {
     canvas.height = h;
     const ctx = canvas.getContext("2d");
     if (!ctx) return "";
+    ctx.save();
+    if (mirror) {
+      ctx.translate(w, 0);
+      ctx.scale(-1, 1);
+    }
     ctx.drawImage(source, 0, 0, w, h);
+    ctx.restore();
     return canvas.toDataURL("image/jpeg", 0.82);
   }
 
   function capturePhoto() {
     const video = videoRef.current;
     if (!video) return;
-    const dataUrl = resizeToBase64(video, video.videoWidth, video.videoHeight);
+    vibrate(18);
+    const dataUrl = resizeToBase64(video, video.videoWidth, video.videoHeight, true);
     setPhoto(dataUrl);
     stopCamera();
     setStage("preview");
@@ -72,7 +90,9 @@ export default function PhotoBooth() {
     if (!file) return;
     const img = new window.Image();
     img.onload = () => {
-      const dataUrl = resizeToBase64(img, img.naturalWidth, img.naturalHeight);
+      // photos from the native camera app aren't mirrored by us — the phone
+      // already handled its own preview/capture consistency.
+      const dataUrl = resizeToBase64(img, img.naturalWidth, img.naturalHeight, false);
       setPhoto(dataUrl);
       setStage("preview");
       URL.revokeObjectURL(img.src);
@@ -99,6 +119,14 @@ export default function PhotoBooth() {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Gagal mengirim foto.");
       setStage("sent");
+
+      if (!audioCtxRef.current) audioCtxRef.current = createAudioContext();
+      const ctx = audioCtxRef.current;
+      if (ctx) {
+        ctx.resume();
+        scheduleWinJingle(ctx, 0);
+      }
+      vibrate([25, 40, 25, 40, 70]);
     } catch (e) {
       setErrorMsg(e instanceof Error ? e.message : "Gagal mengirim foto.");
       setStage("error");
@@ -109,7 +137,12 @@ export default function PhotoBooth() {
     <div className="mx-auto flex max-w-sm flex-col items-center gap-5">
       <div className="relative aspect-[3/4] w-full overflow-hidden rounded-[2rem] border-4 border-gold/80 bg-skynight/60 shadow-[0_0_50px_rgba(246,196,83,0.25)]">
         {stage === "camera" && (
-          <video ref={videoRef} className="h-full w-full object-cover" playsInline muted />
+          <video
+            ref={videoRef}
+            className="h-full w-full object-cover [transform:scaleX(-1)]"
+            playsInline
+            muted
+          />
         )}
 
         {photo && stage !== "camera" && stage !== "idle" && (
@@ -120,7 +153,7 @@ export default function PhotoBooth() {
         {stage === "idle" && (
           <div className="flex h-full w-full flex-col items-center justify-center gap-2 px-6 text-center">
             <span className="text-4xl">📸</span>
-            <p className="text-sm text-white/70">Ambil satu foto buatku, sekarang sayanggg.</p>
+            <p className="text-sm text-white/70">Ambil satu foto buat aku, sekarang juga.</p>
           </div>
         )}
 
