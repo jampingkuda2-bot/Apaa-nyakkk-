@@ -3,20 +3,21 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { createAudioContext, scheduleCelebrationChime, playBlip } from "@/lib/sound";
+import { vibrate } from "@/lib/haptics";
 
 const TEASER_LINES = [
   "sayaaang...",
-  "Sebelumm kamu lanjuttt,",
+  "Sebelummm lanjuttt,",
   "ada sesuatuuu yang udah aku siapin diam-diam loh 👀",
-  "tapi ga segampang itu bukanyaaa...",
-  "kamu sabarr dulu yaaa~",
+  "tapi sabarr sekkk...",
+  "kamu kudu sabarf benn ga pesekk~",
 ];
 
 const REQUIRED_TAPS = 3;
 const TAP_HINTS = [
   "Ketuk bintangnyaaa buat buka ✨",
   "Sekali lagiii dong...",
-  "Satu ketukan terakhirrr, sabarr nyakk pesekkk",
+  "Satu ketukan terakhirrr, sayangg!",
 ];
 
 function Twinkle({ top, left, delay }: { top: string; left: string; delay: number }) {
@@ -82,11 +83,13 @@ export default function IntroGate({
 
     if (nextCount >= REQUIRED_TAPS) {
       setOpening(true);
+      vibrate([25, 40, 25, 40, 70]);
       if (ctx) scheduleCelebrationChime(ctx, 1.15);
       window.setTimeout(onOpen, 1150);
       return;
     }
 
+    vibrate(14);
     setTapCount(nextCount);
     setBump((b) => b + 1);
   }
@@ -161,7 +164,7 @@ export default function IntroGate({
             className="relative z-10 flex h-20 w-20 items-center justify-center rounded-full bg-gold"
             aria-label="Ketuk bintang"
           >
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="#0B2A4A">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="#123A5E">
               <path d="M12 2l2.6 6.9L22 11l-7.4 2.1L12 20l-2.6-6.9L2 11l7.4-2.1L12 2z" />
             </svg>
           </motion.button>
