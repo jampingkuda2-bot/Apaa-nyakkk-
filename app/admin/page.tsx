@@ -139,17 +139,26 @@ export default function AdminDashboard() {
     setConfig((c) => (c ? { ...c, steps: c.steps.filter((s) => s.id !== id) } : c));
   }
 
-  function updatePrize(index: number, value: string) {
+  function updatePrizeLabel(index: number, value: string) {
     setConfig((c) => {
       if (!c) return c;
       const prizes = [...c.prizes];
-      prizes[index] = value;
+      prizes[index] = { ...prizes[index], label: value };
+      return { ...c, prizes };
+    });
+  }
+
+  function updatePrizeWeight(index: number, value: number) {
+    setConfig((c) => {
+      if (!c) return c;
+      const prizes = [...c.prizes];
+      prizes[index] = { ...prizes[index], weight: value };
       return { ...c, prizes };
     });
   }
 
   function addPrize() {
-    setConfig((c) => (c ? { ...c, prizes: [...c.prizes, "Hadiah baru"] } : c));
+    setConfig((c) => (c ? { ...c, prizes: [...c.prizes, { label: "Hadiah baru", weight: 1 }] } : c));
   }
 
   function removePrize(index: number) {
@@ -426,22 +435,40 @@ export default function AdminDashboard() {
               + Tambah hadiah
             </button>
           </div>
+          <p className="mt-1 text-xs text-white/60">
+            Angka "rate" itu bobot peluang, bukan persen langsung — makin gede angkanya dibanding
+            hadiah lain, makin sering dia keluar. Semua rate sama = peluangnya rata.
+          </p>
           <div className="mt-4 flex flex-col gap-2">
-            {config.prizes.map((prize, i) => (
-              <div key={i} className="flex items-center gap-2">
-                <input
-                  value={prize}
-                  onChange={(e) => updatePrize(i, e.target.value)}
-                  className="w-full rounded-lg border border-white/25 bg-white/10 px-3 py-2 text-sm outline-none focus:border-gold"
-                />
-                <button
-                  onClick={() => removePrize(i)}
-                  className="shrink-0 text-xs text-red-300 hover:text-red-200"
-                >
-                  Hapus
-                </button>
-              </div>
-            ))}
+            {config.prizes.map((prize, i) => {
+              const totalWeight = config.prizes.reduce((sum, p) => sum + Math.max(0, p.weight), 0);
+              const pct = totalWeight > 0 ? Math.round((Math.max(0, prize.weight) / totalWeight) * 100) : 0;
+              return (
+                <div key={i} className="flex items-center gap-2">
+                  <input
+                    value={prize.label}
+                    onChange={(e) => updatePrizeLabel(i, e.target.value)}
+                    className="w-full rounded-lg border border-white/25 bg-white/10 px-3 py-2 text-sm outline-none focus:border-gold"
+                  />
+                  <input
+                    type="number"
+                    min={0}
+                    step={1}
+                    value={prize.weight}
+                    onChange={(e) => updatePrizeWeight(i, Math.max(0, Number(e.target.value) || 0))}
+                    className="w-16 shrink-0 rounded-lg border border-white/25 bg-white/10 px-2 py-2 text-center text-sm outline-none focus:border-gold"
+                    aria-label="Rate"
+                  />
+                  <span className="w-10 shrink-0 text-right text-[11px] text-white/50">{pct}%</span>
+                  <button
+                    onClick={() => removePrize(i)}
+                    className="shrink-0 text-xs text-red-300 hover:text-red-200"
+                  >
+                    Hapus
+                  </button>
+                </div>
+              );
+            })}
           </div>
           {config.prizes.length < 2 && (
             <p className="mt-2 text-xs text-amber-300">Minimal isi 2 hadiah supaya roda bisa berputar.</p>
@@ -473,4 +500,3 @@ export default function AdminDashboard() {
     </div>
   );
 }
-  
