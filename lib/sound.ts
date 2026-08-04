@@ -34,7 +34,8 @@ function tone(
   osc.stop(startTime + duration + 0.05);
 }
 
-function noiseWhoosh(ctx: AudioContext, startTime: number, duration: number, peakGain: number) {
+/** Short magical "pluck" for tap feedback — pitch settles down slightly, like a tiny harp pluck. */
+function noiseBurst(ctx: AudioContext, startTime: number, duration: number, peakGain: number) {
   const bufferSize = Math.max(1, Math.floor(ctx.sampleRate * duration));
   const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
   const data = buffer.getChannelData(0);
@@ -61,7 +62,51 @@ function noiseWhoosh(ctx: AudioContext, startTime: number, duration: number, pea
   noise.stop(startTime + duration + 0.05);
 }
 
-/** Short magical "pluck" for tap feedback — pitch settles down slightly, like a tiny harp pluck. */
+function noiseWhoosh(ctx: AudioContext, startTime: number, duration: number, peakGain: number) {
+  noiseBurst(ctx, startTime, duration, peakGain);
+}
+
+/** Soft short whoosh — for opening a photo/video in the lightbox. */
+export function playWhoosh(ctx: AudioContext) {
+  noiseBurst(ctx, ctx.currentTime, 0.28, 0.07);
+}
+
+/** A single short mechanical tick, like a wheel passing a peg. */
+function tickSound(ctx: AudioContext, startTime: number) {
+  tone(ctx, 850 + Math.random() * 120, startTime, 0.045, 0.055, "square");
+}
+
+/**
+ * Schedules a series of ticks over the spin duration that start fast and
+ * gradually slow down, like a real wheel losing momentum to friction.
+ */
+export function scheduleWheelTicks(ctx: AudioContext, delaySeconds: number, spinDuration: number) {
+  const start = ctx.currentTime + delaySeconds;
+  let elapsed = 0;
+  let i = 0;
+  while (elapsed < spinDuration - 0.15) {
+    const progress = elapsed / spinDuration;
+    const interval = 0.035 + Math.pow(progress, 2.2) * 0.3;
+    elapsed += interval;
+    if (elapsed >= spinDuration - 0.15) break;
+    tickSound(ctx, start + elapsed);
+    i++;
+    if (i > 60) break;
+  }
+}
+
+/** Bright ascending arpeggio + sparkle — a "you won!" style jingle. */
+export function scheduleWinJingle(ctx: AudioContext, delaySeconds: number) {
+  const start = ctx.currentTime + delaySeconds;
+  const notes = [659.25, 783.99, 1046.5]; // E5 G5 C6
+  notes.forEach((f, i) => tone(ctx, f, start + i * 0.1, 0.4, 0.11, "triangle"));
+  for (let i = 0; i < 6; i++) {
+    const t = start + 0.32 + Math.random() * 0.55;
+    const f = 1400 + Math.random() * 1300;
+    tone(ctx, f, t, 0.15, 0.045, "sine");
+  }
+}
+
 export function playBlip(ctx: AudioContext, freq: number) {
   const start = ctx.currentTime;
   const osc = ctx.createOscillator();
