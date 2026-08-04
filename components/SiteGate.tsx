@@ -21,6 +21,11 @@ export default function SiteGate({ config }: { config: SiteConfig }) {
     setShowPopup(true);
   }
 
+  function handleGateOpened() {
+    fetch("/api/notify/visit", { method: "POST" }).catch(() => {});
+    setPhase("consent");
+  }
+
   return (
     <>
       <AnimatePresence mode="wait">
@@ -28,7 +33,7 @@ export default function SiteGate({ config }: { config: SiteConfig }) {
           <IntroGate
             key="intro"
             recipientName={config.recipientName}
-            onOpen={() => setPhase("consent")}
+            onOpen={handleGateOpened}
           />
         )}
 
