@@ -23,12 +23,12 @@ export type SiteConfig = {
   gallery: (MediaItem | null)[];
   videos: (MediaItem | null)[];
   prizes: Prize[];
-  spinsAllowed: number;
+  maxSpinsPerIp: number;
 };
 
 export const GALLERY_SLOTS = 10;
 export const VIDEO_SLOTS = 10;
-export const MAX_SPINS_PER_IP = 30;
+export const DEFAULT_MAX_SPINS = 30;
 
 export const DEFAULT_CONFIG: SiteConfig = {
   recipientName: "Angel",
@@ -60,7 +60,7 @@ export const DEFAULT_CONFIG: SiteConfig = {
     { label: "Dark Megalodon", weight: 1 },
     { label: "Flame Tyran", weight: 1 },
   ],
-  spinsAllowed: 1,
+  maxSpinsPerIp: DEFAULT_MAX_SPINS,
 };
 
 // Old saved configs may have fewer gallery/video slots than the current
@@ -91,6 +91,9 @@ export function normalizeConfig(data: Partial<SiteConfig>): SiteConfig {
     return { label: "Hadiah", weight: 1 };
   });
   merged.prizes = prizes.length > 0 ? prizes : DEFAULT_CONFIG.prizes;
+
+  const rawMax = (data as { maxSpinsPerIp?: unknown }).maxSpinsPerIp;
+  merged.maxSpinsPerIp = typeof rawMax === "number" && rawMax > 0 ? rawMax : DEFAULT_MAX_SPINS;
 
   return merged;
 }
