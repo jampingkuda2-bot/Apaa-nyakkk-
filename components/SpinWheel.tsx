@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { createAudioContext, scheduleWheelTicks, scheduleWinJingle } from "@/lib/sound";
 import { vibrate } from "@/lib/haptics";
+import { getOrCreateDeviceId, getDeviceFingerprint } from "@/lib/device";
 import { Prize } from "@/lib/types";
 
 const PALETTE = ["#A7E0FB", "#F6C453", "#FFD6E0", "#5FB2E8", "#2E74B5"];
@@ -32,16 +33,26 @@ export default function SpinWheel({ prizes }: { prizes: Prize[] }) {
   const [limitMsg, setLimitMsg] = useState<string | null>(null);
   const rotationRef = useRef(0);
   const audioCtxRef = useRef<AudioContext | null>(null);
+  const deviceIdRef = useRef<string>("");
+  const fingerprintRef = useRef<string>("");
 
   const SPIN_DURATION = 4.2;
   const size = 320;
   const radius = size / 2;
 
   useEffect(() => {
-    fetch("/api/spin")
-      .then((r) => r.json())
-      .then((d) => setRemaining(typeof d.remaining === "number" ? d.remaining : null))
-      .catch(() => setRemaining(null));
+    deviceIdRef.current = getOrCreateDeviceId();
+    getDeviceFingerprint().then((fp) => {
+      fingerprintRef.current = fp;
+      const params = new URLSearchParams({
+        deviceId: deviceIdRef.current,
+        fp,
+      });
+      fetch(`/api/spin?${params.toString()}`)
+        .then((r) => r.json())
+        .then((d) => setRemaining(typeof d.remaining === "number" ? d.remaining : null))
+        .catch(() => setRemaining(null));
+    });
   }, []);
 
   const segments = useMemo(
@@ -75,7 +86,14 @@ export default function SpinWheel({ prizes }: { prizes: Prize[] }) {
     let prizeLabel = "";
 
     try {
-      const res = await fetch("/api/spin", { method: "POST" });
+      const res = await fetch("/api/spin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          deviceId: deviceIdRef.current,
+          fingerprint: fingerprintRef.current,
+        }),
+      });
       const data = await res.json();
       if (!res.ok) {
         setSpinning(false);
