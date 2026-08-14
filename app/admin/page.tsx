@@ -41,6 +41,13 @@ export default function AdminDashboard() {
   const [spinsData, setSpinsData] = useState<SpinsData | null>(null);
   const [spinsLoading, setSpinsLoading] = useState(true);
   const [resettingIp, setResettingIp] = useState<string | null>(null);
+  const [summary, setSummary] = useState<{
+    totalVisits: number;
+    totalSpins: number;
+    uniqueDevicesSpun: number;
+    lastVisit: { time: string; device: string } | null;
+  } | null>(null);
+  const [summaryLoading, setSummaryLoading] = useState(true);
 
   useEffect(() => {
     fetch("/api/admin/config")
@@ -50,6 +57,12 @@ export default function AdminDashboard() {
       .finally(() => setLoading(false));
 
     loadSpinsData();
+
+    fetch("/api/admin/summary")
+      .then((r) => r.json())
+      .then((data) => setSummary(data))
+      .catch(() => setSummary(null))
+      .finally(() => setSummaryLoading(false));
   }, []);
 
   function loadSpinsData() {
@@ -61,10 +74,10 @@ export default function AdminDashboard() {
       .finally(() => setSpinsLoading(false));
   }
 
-  async function resetSpins(ip?: string) {
-    setResettingIp(ip ?? "__all__");
+  async function resetSpins(key?: string) {
+    setResettingIp(key ?? "__all__");
     try {
-      const url = ip ? `/api/admin/spins?ip=${encodeURIComponent(ip)}` : "/api/admin/spins";
+      const url = key ? `/api/admin/spins?key=${encodeURIComponent(key)}` : "/api/admin/spins";
       await fetch(url, { method: "DELETE" });
       loadSpinsData();
     } catch {
@@ -275,6 +288,44 @@ export default function AdminDashboard() {
               value={config.openingMessage}
               onChange={(e) => update("openingMessage", e.target.value)}
               rows={3}
+              className="rounded-lg border border-white/25 bg-white/10 px-3 py-2 outline-none focus:border-gold"
+            />
+          </label>
+
+          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+            <label className="flex flex-col gap-1 text-sm">
+              Tanggal ulang tahun
+              <input
+                type="text"
+                inputMode="numeric"
+                placeholder="MM-DD, misal 08-18"
+                pattern="\d{2}-\d{2}"
+                value={config.birthdayDate}
+                onChange={(e) => update("birthdayDate", e.target.value)}
+                className="rounded-lg border border-white/25 bg-white/10 px-3 py-2 outline-none focus:border-gold"
+              />
+              <span className="text-xs text-white/50">Format MM-DD, dipakai buat hitung mundur.</span>
+            </label>
+            <label className="flex flex-col gap-1 text-sm">
+              Tanggal jadian (opsional)
+              <input
+                type="date"
+                value={config.togetherSinceDate ?? ""}
+                onChange={(e) => update("togetherSinceDate", e.target.value || null)}
+                className="rounded-lg border border-white/25 bg-white/10 px-3 py-2 outline-none focus:border-gold"
+              />
+              <span className="text-xs text-white/50">
+                Kosongkan kalau nggak mau nampilin penghitung "udah X hari bareng".
+              </span>
+            </label>
+          </div>
+
+          <label className="mt-4 flex flex-col gap-1 text-sm">
+            Surat penutup (di paling bawah halaman)
+            <textarea
+              value={config.closingLetter}
+              onChange={(e) => update("closingLetter", e.target.value)}
+              rows={5}
               className="rounded-lg border border-white/25 bg-white/10 px-3 py-2 outline-none focus:border-gold"
             />
           </label>
@@ -534,44 +585,74 @@ export default function AdminDashboard() {
             </button>
           </div>
           <p className="mt-1 text-xs text-white/60">
-            Ini daftar alamat IP yang sudah pernah mutar roda, beserta sisa jatahnya. Reset kalau
+            Ini daftar perangkat yang sudah pernah mutar roda (dideteksi dari perangkatnya, bukan
+            IP, jadi ganti jaringan wifi tetap kehitung sama), beserta sisa jatahnya. Reset kalau
             mau kasih dia jatah putaran baru.
           </p>
 
           <div className="mt-4 flex flex-col gap-2">
             {spinsLoading && <p className="text-sm text-white/50">Memuat...</p>}
 
-            {!spinsLoading && spinsData && Object.keys(spinsData.byIp).length === 0 && (
+            {!spinsLoading && spinsData && Object.keys(spinsData.byDevice).length === 0 && (
               <p className="text-sm text-white/50">Belum ada yang pernah mutar roda.</p>
             )}
 
             {!spinsLoading &&
               spinsData &&
-              Object.entries(spinsData.byIp).map(([ip, entry]) => {
+              Object.entries(spinsData.byDevice).map(([key, entry]) => {
                 const last = entry.history[entry.history.length - 1];
                 return (
                   <div
-                    key={ip}
+                    key={key}
                     className="flex items-center justify-between gap-3 rounded-xl border border-white/15 bg-white/5 p-3"
                   >
                     <div className="min-w-0">
-                      <p className="font-mono text-xs text-white/80">{ip}</p>
+                      <p className="text-xs text-white/80">{last?.device || "Perangkat tidak dikenal"}</p>
+                      <p className="mt-0.5 truncate font-mono text-[10px] text-white/40">{key}</p>
                       <p className="mt-0.5 text-xs text-white/50">
                         {entry.count} kali dipakai
                         {last ? ` · terakhir: ${last.prize} (${last.time})` : ""}
                       </p>
                     </div>
                     <button
-                      onClick={() => resetSpins(ip)}
+                      onClick={() => resetSpins(key)}
                       disabled={resettingIp !== null}
                       className="shrink-0 rounded-full border border-white/25 px-3 py-1.5 text-xs hover:bg-white/10 disabled:opacity-50"
                     >
-                      {resettingIp === ip ? "..." : "Reset"}
+                      {resettingIp === key ? "..." : "Reset"}
                     </button>
                   </div>
                 );
               })}
           </div>
+        </section>
+
+        {/* Activity summary */}
+        <section className="glass rounded-2xl p-6">
+          <h2 className="font-display text-lg font-semibold">Ringkasan aktivitas</h2>
+          {summaryLoading && <p className="mt-3 text-sm text-white/50">Memuat...</p>}
+          {!summaryLoading && summary && (
+            <div className="mt-4 grid grid-cols-2 gap-3">
+              <div className="rounded-xl border border-white/15 bg-white/5 p-4 text-center">
+                <p className="font-display text-2xl font-bold text-gold">{summary.totalVisits}</p>
+                <p className="mt-1 text-xs text-white/60">kali website dibuka</p>
+              </div>
+              <div className="rounded-xl border border-white/15 bg-white/5 p-4 text-center">
+                <p className="font-display text-2xl font-bold text-gold">{summary.totalSpins}</p>
+                <p className="mt-1 text-xs text-white/60">total putaran roda</p>
+              </div>
+              <div className="rounded-xl border border-white/15 bg-white/5 p-4 text-center">
+                <p className="font-display text-2xl font-bold text-gold">{summary.uniqueDevicesSpun}</p>
+                <p className="mt-1 text-xs text-white/60">perangkat pernah mutar</p>
+              </div>
+              <div className="flex flex-col items-center justify-center rounded-xl border border-white/15 bg-white/5 p-4 text-center">
+                <p className="text-xs text-white/60">Terakhir dibuka</p>
+                <p className="mt-1 text-xs text-white/80">
+                  {summary.lastVisit ? `${summary.lastVisit.device} · ${summary.lastVisit.time}` : "-"}
+                </p>
+              </div>
+            </div>
+          )}
         </section>
       </div>
 
