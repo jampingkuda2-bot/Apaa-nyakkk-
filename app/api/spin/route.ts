@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { getConfig } from "@/lib/blob";
 import { getSpinsData, saveSpinsData, SpinRecord } from "@/lib/spins";
 import { sendEmail, parseDevice, getClientIp } from "@/lib/email";
-import { MAX_SPINS_PER_IP } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -18,12 +17,13 @@ function pickWeightedIndex(weights: number[]): number {
 }
 
 export async function GET(req: NextRequest) {
+  const config = await getConfig();
   const ip = getClientIp(req.headers);
   const spins = await getSpinsData();
   const used = spins.byIp[ip]?.count ?? 0;
   return NextResponse.json({
-    remaining: Math.max(0, MAX_SPINS_PER_IP - used),
-    max: MAX_SPINS_PER_IP,
+    remaining: Math.max(0, config.maxSpinsPerIp - used),
+    max: config.maxSpinsPerIp,
   });
 }
 
@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
   const spins = await getSpinsData();
   const entry = spins.byIp[ip] ?? { count: 0, history: [] };
 
-  if (entry.count >= MAX_SPINS_PER_IP) {
+  if (entry.count >= config.maxSpinsPerIp) {
     return NextResponse.json(
       { error: "Sudah mencapai batas maksimal putaran.", remaining: 0 },
       { status: 403 }
@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
   spins.byIp[ip] = entry;
   await saveSpinsData(spins);
 
-  const remaining = MAX_SPINS_PER_IP - entry.count;
+  const remaining = config.maxSpinsPerIp - entry.count;
 
   await sendEmail({
     subject: `Spin baru: dapat "${prizeLabel}" 🎡`,
