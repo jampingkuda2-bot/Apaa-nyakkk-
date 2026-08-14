@@ -7,6 +7,9 @@ import SpinWheel from "./SpinWheel";
 import Gallery from "./Gallery";
 import PhotoBooth from "./PhotoBooth";
 import MessageBox from "./MessageBox";
+import Countdown from "./Countdown";
+import TogetherCounter from "./TogetherCounter";
+import SweetWords from "./SweetWords";
 import { SiteConfig } from "@/lib/types";
 
 function Heart({ left, delay, size }: { left: string; delay: number; size: number }) {
@@ -85,6 +88,16 @@ export default function Experience({ config }: { config: SiteConfig }) {
         </motion.button>
       </section>
 
+      {/* Countdown + together counter */}
+      <section className="relative flex flex-col items-center gap-14 px-6 py-14">
+        <div className="flex flex-col items-center gap-4">
+          <span className="font-mono text-xs uppercase tracking-[0.3em] text-gold">Menuju hari-H</span>
+          <Countdown birthdayDate={config.birthdayDate} recipientName={config.recipientName} />
+        </div>
+
+        {config.togetherSinceDate && <TogetherCounter sinceDate={config.togetherSinceDate} />}
+      </section>
+
       {/* Steps */}
       <section id="perjalanan" className="relative py-10">
         <div className="mx-auto max-w-2xl px-6 text-center">
@@ -148,6 +161,17 @@ export default function Experience({ config }: { config: SiteConfig }) {
         </div>
       </section>
 
+      {/* Sweet words */}
+      <section className="relative flex flex-col items-center px-6 py-16">
+        <span className="font-mono text-xs uppercase tracking-[0.3em] text-gold">Bonus</span>
+        <h2 className="mt-3 max-w-sm text-center font-display text-3xl font-bold text-white text-shadow-soft sm:text-4xl">
+          Butuh disemangatin dikit?
+        </h2>
+        <div className="mt-10 w-full">
+          <SweetWords />
+        </div>
+      </section>
+
       {/* Spin wheel */}
       <section className="relative flex flex-col items-center px-6 py-24">
         <span className="font-mono text-xs uppercase tracking-[0.3em] text-gold">Buat kamu</span>
@@ -159,6 +183,19 @@ export default function Experience({ config }: { config: SiteConfig }) {
         </p>
         <div className="mt-12">
           <SpinWheel prizes={config.prizes} />
+        </div>
+      </section>
+
+      {/* Closing letter */}
+      <section className="relative px-6 py-16">
+        <div className="glass mx-auto max-w-lg rounded-3xl px-8 py-10">
+          <span className="font-mono text-xs uppercase tracking-[0.3em] text-gold">
+            Sebelum kamu tutup ini
+          </span>
+          <p className="mt-4 whitespace-pre-line text-[15px] leading-relaxed text-white/85">
+            {config.closingLetter}
+          </p>
+          <p className="mt-6 text-right font-script text-2xl text-white/90">{config.senderName}</p>
         </div>
       </section>
 
