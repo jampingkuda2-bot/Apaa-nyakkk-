@@ -4,8 +4,8 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const SWEET_WORDS = [
-  "Kamu tu gatauu kenapa selalu bikin hari yang biasa aja jadi mendingan.",
-  "Aku tuu suka banget sama cara kamu, walau kamu sendiri mungkin gaa sadar.",
+  "Kamuu tu gatauu kenapa selalu bikin hari yang biasa aja jadi mendingan.",
+  "Aku tuu suka banget samaaa kamuu, walau kamu sendiri mungkin gaa sadar.",
   "Semoga kamu selalu dikelilingi orang-orang yang sayang kamu sebanyak aku sayang kamu.",
   "Kadang aku mikir, untung banget ya waktu itu kita ketemu di Roblox.",
   "Kamu itu capee boleh kesell, tapii jangan nyerah.",
