@@ -5,15 +5,14 @@ const SPINS_PATH = "data/spins.json";
 export type SpinRecord = {
   prize: string;
   time: string;
-  ip: string;
   device: string;
 };
 
 export type SpinsData = {
-  byIp: Record<string, { count: number; history: SpinRecord[] }>;
+  byDevice: Record<string, { count: number; history: SpinRecord[] }>;
 };
 
-const EMPTY: SpinsData = { byIp: {} };
+const EMPTY: SpinsData = { byDevice: {} };
 
 // NOTE: this file is intentionally separate from data/config.json (which is
 // exposed publicly via /api/config) so spin history / IPs are never leaked
