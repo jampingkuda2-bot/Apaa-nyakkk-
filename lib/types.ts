@@ -15,6 +15,22 @@ export type Prize = {
   weight: number;
 };
 
+export type SoundPack = {
+  tapBlip: string | null; // star tap feedback
+  chime: string | null; // gate-opening celebration chime
+  wheelTick: string | null; // spin wheel ticking
+  winJingle: string | null; // spin result / sent-success jingle
+  whoosh: string | null; // gallery open sound
+};
+
+export const DEFAULT_SOUNDS: SoundPack = {
+  tapBlip: null,
+  chime: null,
+  wheelTick: null,
+  winJingle: null,
+  whoosh: null,
+};
+
 export type SiteConfig = {
   recipientName: string;
   senderName: string;
@@ -27,6 +43,7 @@ export type SiteConfig = {
   birthdayDate: string; // "MM-DD"
   togetherSinceDate: string | null; // "YYYY-MM-DD" or null to hide the counter
   closingLetter: string;
+  sounds: SoundPack;
 };
 
 export const GALLERY_SLOTS = 10;
@@ -68,6 +85,7 @@ export const DEFAULT_CONFIG: SiteConfig = {
   togetherSinceDate: null,
   closingLetter:
     "Kalau kamu baca ini sampai sini, makasih ya udah mau pelan-pelan buka semuanya. Aku nggak selalu jago ngomongin perasaan langsung, jadi mungkin ini cara aku yang agak muter buat bilang: aku sayang kamu, dan aku bersyukur banget ada kamu. Selamat ulang tahun.",
+  sounds: { ...DEFAULT_SOUNDS },
 };
 
 // Old saved configs may have fewer gallery/video slots than the current
@@ -115,6 +133,16 @@ export function normalizeConfig(data: Partial<SiteConfig>): SiteConfig {
   const rawLetter = (data as { closingLetter?: unknown }).closingLetter;
   merged.closingLetter =
     typeof rawLetter === "string" && rawLetter.trim() ? rawLetter : DEFAULT_CONFIG.closingLetter;
+
+  const rawSounds = (data as { sounds?: unknown }).sounds;
+  const soundsObj = rawSounds && typeof rawSounds === "object" ? (rawSounds as Record<string, unknown>) : {};
+  merged.sounds = {
+    tapBlip: typeof soundsObj.tapBlip === "string" ? soundsObj.tapBlip : null,
+    chime: typeof soundsObj.chime === "string" ? soundsObj.chime : null,
+    wheelTick: typeof soundsObj.wheelTick === "string" ? soundsObj.wheelTick : null,
+    winJingle: typeof soundsObj.winJingle === "string" ? soundsObj.winJingle : null,
+    whoosh: typeof soundsObj.whoosh === "string" ? soundsObj.whoosh : null,
+  };
 
   return merged;
 }
