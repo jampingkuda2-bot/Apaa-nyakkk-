@@ -10,7 +10,7 @@ const config: Config = {
         skymid: "#5FB2E8",
         skydeep: "#2E74B5",
         skynight: "#123A5E",
-        gold: "#F6C453",
+        gold: "#F582AE",
         blush: "#FFD6E0",
         cloud: "#FFFFFF",
       },
