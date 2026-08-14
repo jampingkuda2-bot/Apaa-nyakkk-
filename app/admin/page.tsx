@@ -593,12 +593,12 @@ export default function AdminDashboard() {
           <div className="mt-4 flex flex-col gap-2">
             {spinsLoading && <p className="text-sm text-white/50">Memuat...</p>}
 
-            {!spinsLoading && spinsData && Object.keys(spinsData.byDevice).length === 0 && (
+            {!spinsLoading && spinsData?.byDevice && Object.keys(spinsData.byDevice).length === 0 && (
               <p className="text-sm text-white/50">Belum ada yang pernah mutar roda.</p>
             )}
 
             {!spinsLoading &&
-              spinsData &&
+              spinsData?.byDevice &&
               Object.entries(spinsData.byDevice).map(([key, entry]) => {
                 const last = entry.history[entry.history.length - 1];
                 return (
