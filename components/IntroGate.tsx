@@ -3,21 +3,23 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { createAudioContext, scheduleCelebrationChime, playBlip } from "@/lib/sound";
+import { playCustomSound } from "@/lib/customAudio";
 import { vibrate } from "@/lib/haptics";
+import { SoundPack } from "@/lib/types";
 
 const TEASER_LINES = [
-  "sayaaang...",
-  "Sebelummm lanjuttt,",
+  "Psstt~ sayaaang...",
+  "Sebelooom kamu lanjuttt,",
   "ada sesuatuuu yang udah aku siapin diam-diam loh 👀",
-  "tapi sabarr sekkk...",
-  "kamu sabarrr benn gaaa pesekk~",
+  "tapi ga segampang itu bukanyaaa...",
+  "kamu kudu bantuin aku dulu yaaa~",
 ];
 
 const REQUIRED_TAPS = 3;
 const TAP_HINTS = [
   "Ketuk bintangnyaaa buat buka ✨",
   "Sekali lagiii dong...",
-  "Satu ketukan terakhirrr, sayangg!",
+  "Satu ketukan terakhirrr, gaskeun!",
 ];
 
 function Twinkle({ top, left, delay }: { top: string; left: string; delay: number }) {
@@ -44,9 +46,11 @@ function ShootingStar() {
 export default function IntroGate({
   recipientName,
   onOpen,
+  sounds,
 }: {
   recipientName: string;
   onOpen: () => void;
+  sounds?: SoundPack;
 }) {
   const [lineIndex, setLineIndex] = useState(0);
   const [ready, setReady] = useState(false);
@@ -75,16 +79,30 @@ export default function IntroGate({
     if (!ready || opening) return;
     const nextCount = tapCount + 1;
 
-    const ctx = getAudioCtx();
-    if (ctx) {
-      ctx.resume();
-      if (nextCount < REQUIRED_TAPS) playBlip(ctx, 620 + nextCount * 160);
+    if (nextCount < REQUIRED_TAPS) {
+      if (sounds?.tapBlip) {
+        playCustomSound(sounds.tapBlip, 0.7);
+      } else {
+        const ctx = getAudioCtx();
+        if (ctx) {
+          ctx.resume();
+          playBlip(ctx, 620 + nextCount * 160);
+        }
+      }
     }
 
     if (nextCount >= REQUIRED_TAPS) {
       setOpening(true);
       vibrate([25, 40, 25, 40, 70]);
-      if (ctx) scheduleCelebrationChime(ctx, 1.15);
+      if (sounds?.chime) {
+        window.setTimeout(() => playCustomSound(sounds.chime as string), 1150);
+      } else {
+        const ctx = getAudioCtx();
+        if (ctx) {
+          ctx.resume();
+          scheduleCelebrationChime(ctx, 1.15);
+        }
+      }
       window.setTimeout(onOpen, 1150);
       return;
     }
@@ -150,9 +168,9 @@ export default function IntroGate({
                     opacity: 1,
                     scale: [1 + tapCount * 0.08, 1.18 + tapCount * 0.08, 1 + tapCount * 0.08],
                     boxShadow: [
-                      `0 0 ${40 + tapCount * 18}px ${10 + tapCount * 6}px rgba(246,196,83,${0.35 + tapCount * 0.15})`,
-                      `0 0 ${75 + tapCount * 18}px ${24 + tapCount * 6}px rgba(246,196,83,${0.6 + tapCount * 0.15})`,
-                      `0 0 ${40 + tapCount * 18}px ${10 + tapCount * 6}px rgba(246,196,83,${0.35 + tapCount * 0.15})`,
+                      `0 0 ${40 + tapCount * 18}px ${10 + tapCount * 6}px rgba(245, 130, 174,${0.35 + tapCount * 0.15})`,
+                      `0 0 ${75 + tapCount * 18}px ${24 + tapCount * 6}px rgba(245, 130, 174,${0.6 + tapCount * 0.15})`,
+                      `0 0 ${40 + tapCount * 18}px ${10 + tapCount * 6}px rgba(245, 130, 174,${0.35 + tapCount * 0.15})`,
                     ],
                   }
             }
