@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { DEFAULT_CONFIG, GALLERY_SLOTS, VIDEO_SLOTS, SiteConfig, StepData, normalizeConfig } from "@/lib/types";
+import type { SpinsData } from "@/lib/spins";
 
 import { upload } from "@vercel/blob/client";
 
@@ -37,6 +38,9 @@ export default function AdminDashboard() {
   const [savedAt, setSavedAt] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busySlot, setBusySlot] = useState<string | null>(null);
+  const [spinsData, setSpinsData] = useState<SpinsData | null>(null);
+  const [spinsLoading, setSpinsLoading] = useState(true);
+  const [resettingIp, setResettingIp] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/admin/config")
@@ -44,7 +48,31 @@ export default function AdminDashboard() {
       .then((data) => setConfig(normalizeConfig(data)))
       .catch(() => setConfig(DEFAULT_CONFIG))
       .finally(() => setLoading(false));
+
+    loadSpinsData();
   }, []);
+
+  function loadSpinsData() {
+    setSpinsLoading(true);
+    fetch("/api/admin/spins")
+      .then((r) => r.json())
+      .then((data) => setSpinsData(data))
+      .catch(() => setSpinsData(null))
+      .finally(() => setSpinsLoading(false));
+  }
+
+  async function resetSpins(ip?: string) {
+    setResettingIp(ip ?? "__all__");
+    try {
+      const url = ip ? `/api/admin/spins?ip=${encodeURIComponent(ip)}` : "/api/admin/spins";
+      await fetch(url, { method: "DELETE" });
+      loadSpinsData();
+    } catch {
+      // ignore, loadSpinsData will just show stale data
+    } finally {
+      setResettingIp(null);
+    }
+  }
 
   if (loading || !config) {
     return (
@@ -473,6 +501,77 @@ export default function AdminDashboard() {
           {config.prizes.length < 2 && (
             <p className="mt-2 text-xs text-amber-300">Minimal isi 2 hadiah supaya roda bisa berputar.</p>
           )}
+
+          <div className="mt-5 border-t border-white/10 pt-4">
+            <label className="flex items-center justify-between gap-3 text-sm">
+              <span>
+                Batas maksimal putaran
+                <span className="block text-xs text-white/50">per alamat IP / jaringan</span>
+              </span>
+              <input
+                type="number"
+                min={1}
+                value={config.maxSpinsPerIp}
+                onChange={(e) =>
+                  update("maxSpinsPerIp", Math.max(1, Number(e.target.value) || 1))
+                }
+                className="w-20 rounded-lg border border-white/25 bg-white/10 px-3 py-2 text-center text-sm outline-none focus:border-gold"
+              />
+            </label>
+          </div>
+        </section>
+
+        {/* Spin data management */}
+        <section className="glass rounded-2xl p-6">
+          <div className="flex items-center justify-between">
+            <h2 className="font-display text-lg font-semibold">Kelola data spin</h2>
+            <button
+              onClick={() => resetSpins()}
+              disabled={resettingIp !== null}
+              className="rounded-full border border-red-300/50 px-4 py-1.5 text-xs font-semibold text-red-300 hover:bg-red-300/10 disabled:opacity-50"
+            >
+              {resettingIp === "__all__" ? "Mereset..." : "Reset semua"}
+            </button>
+          </div>
+          <p className="mt-1 text-xs text-white/60">
+            Ini daftar alamat IP yang sudah pernah mutar roda, beserta sisa jatahnya. Reset kalau
+            mau kasih dia jatah putaran baru.
+          </p>
+
+          <div className="mt-4 flex flex-col gap-2">
+            {spinsLoading && <p className="text-sm text-white/50">Memuat...</p>}
+
+            {!spinsLoading && spinsData && Object.keys(spinsData.byIp).length === 0 && (
+              <p className="text-sm text-white/50">Belum ada yang pernah mutar roda.</p>
+            )}
+
+            {!spinsLoading &&
+              spinsData &&
+              Object.entries(spinsData.byIp).map(([ip, entry]) => {
+                const last = entry.history[entry.history.length - 1];
+                return (
+                  <div
+                    key={ip}
+                    className="flex items-center justify-between gap-3 rounded-xl border border-white/15 bg-white/5 p-3"
+                  >
+                    <div className="min-w-0">
+                      <p className="font-mono text-xs text-white/80">{ip}</p>
+                      <p className="mt-0.5 text-xs text-white/50">
+                        {entry.count} kali dipakai
+                        {last ? ` · terakhir: ${last.prize} (${last.time})` : ""}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => resetSpins(ip)}
+                      disabled={resettingIp !== null}
+                      className="shrink-0 rounded-full border border-white/25 px-3 py-1.5 text-xs hover:bg-white/10 disabled:opacity-50"
+                    >
+                      {resettingIp === ip ? "..." : "Reset"}
+                    </button>
+                  </div>
+                );
+              })}
+          </div>
         </section>
       </div>
 
