@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sendEmail, parseDevice, getClientIp } from "@/lib/email";
+import { recordVisit } from "@/lib/visits";
 
 export const dynamic = "force-dynamic";
 
@@ -8,6 +9,8 @@ export async function POST(req: NextRequest) {
   const device = parseDevice(ua);
   const ip = getClientIp(req.headers);
   const time = new Date().toLocaleString("id-ID", { timeZone: "Asia/Jakarta" });
+
+  await recordVisit({ time, device });
 
   await sendEmail({
     subject: "Website ulang tahun baru saja dibuka 👀",
