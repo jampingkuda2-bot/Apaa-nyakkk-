@@ -24,7 +24,9 @@ export async function getSpinsData(): Promise<SpinsData> {
     if (!match) return EMPTY;
     const res = await fetch(match.url, { cache: "no-store" });
     if (!res.ok) return EMPTY;
-    return (await res.json()) as SpinsData;
+    const raw = (await res.json()) as Partial<SpinsData> | null;
+    const byDevice = raw && typeof raw.byDevice === "object" && raw.byDevice !== null ? raw.byDevice : {};
+    return { byDevice };
   } catch (err) {
     console.error("getSpinsData failed, falling back to empty:", err);
     return EMPTY;
