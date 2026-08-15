@@ -7,14 +7,6 @@ import { playCustomSound } from "@/lib/customAudio";
 import { vibrate } from "@/lib/haptics";
 import { SoundPack } from "@/lib/types";
 
-const TEASER_LINES = [
-  "Psstt~ sayaaang...",
-  "Sebelooom kamu lanjuttt,",
-  "ada sesuatuuu yang udah aku siapin diam-diam loh 👀",
-  "tapi ga segampang itu bukanyaaa...",
-  "kamu kudu bantuin aku dulu yaaa~",
-];
-
 const REQUIRED_TAPS = 3;
 const TAP_HINTS = [
   "Ketuk bintangnyaaa buat buka ✨",
@@ -47,10 +39,12 @@ export default function IntroGate({
   recipientName,
   onOpen,
   sounds,
+  teasers,
 }: {
   recipientName: string;
   onOpen: () => void;
   sounds?: SoundPack;
+  teasers: string[];
 }) {
   const [lineIndex, setLineIndex] = useState(0);
   const [ready, setReady] = useState(false);
@@ -60,7 +54,7 @@ export default function IntroGate({
   const audioCtxRef = useRef<AudioContext | null>(null);
 
   useEffect(() => {
-    if (lineIndex < TEASER_LINES.length) {
+    if (lineIndex < teasers.length) {
       const t = setTimeout(() => setLineIndex((i) => i + 1), 1900);
       return () => clearTimeout(t);
     }
@@ -139,7 +133,7 @@ export default function IntroGate({
 
       <div className="relative z-10 flex h-24 items-center justify-center">
         <AnimatePresence mode="wait">
-          {!ready && lineIndex < TEASER_LINES.length && (
+          {!ready && lineIndex < teasers.length && (
             <motion.p
               key={lineIndex}
               initial={{ opacity: 0, y: 10 }}
@@ -148,7 +142,7 @@ export default function IntroGate({
               transition={{ duration: 0.6 }}
               className="max-w-xs font-body text-lg text-white/90"
             >
-              {TEASER_LINES[lineIndex]}
+              {teasers[lineIndex]}
             </motion.p>
           )}
         </AnimatePresence>
