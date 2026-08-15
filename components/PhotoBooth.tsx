@@ -2,11 +2,13 @@
 
 import { useEffect, useRef, useState } from "react";
 import { createAudioContext, scheduleWinJingle } from "@/lib/sound";
+import { playCustomSound } from "@/lib/customAudio";
 import { vibrate } from "@/lib/haptics";
+import { SoundPack } from "@/lib/types";
 
 type Stage = "idle" | "camera" | "preview" | "sending" | "sent" | "error";
 
-export default function PhotoBooth() {
+export default function PhotoBooth({ sounds }: { sounds?: SoundPack }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -120,11 +122,15 @@ export default function PhotoBooth() {
       if (!res.ok) throw new Error(data.error || "Gagal mengirim foto.");
       setStage("sent");
 
-      if (!audioCtxRef.current) audioCtxRef.current = createAudioContext();
-      const ctx = audioCtxRef.current;
-      if (ctx) {
-        ctx.resume();
-        scheduleWinJingle(ctx, 0);
+      if (sounds?.winJingle) {
+        playCustomSound(sounds.winJingle);
+      } else {
+        if (!audioCtxRef.current) audioCtxRef.current = createAudioContext();
+        const ctx = audioCtxRef.current;
+        if (ctx) {
+          ctx.resume();
+          scheduleWinJingle(ctx, 0);
+        }
       }
       vibrate([25, 40, 25, 40, 70]);
     } catch (e) {
@@ -135,7 +141,7 @@ export default function PhotoBooth() {
 
   return (
     <div className="mx-auto flex max-w-sm flex-col items-center gap-5">
-      <div className="relative aspect-[3/4] w-full overflow-hidden rounded-[2rem] border-4 border-gold/80 bg-skynight/60 shadow-[0_0_50px_rgba(246,196,83,0.25)]">
+      <div className="relative aspect-[3/4] w-full overflow-hidden rounded-[2rem] border-4 border-gold/80 bg-skynight/60 shadow-[0_0_50px_rgba(245, 130, 174,0.25)]">
         {stage === "camera" && (
           <video
             ref={videoRef}
