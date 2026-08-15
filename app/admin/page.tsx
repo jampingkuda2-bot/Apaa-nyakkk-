@@ -227,6 +227,23 @@ export default function AdminDashboard() {
     setConfig((c) => (c ? { ...c, sounds: { ...c.sounds, [key]: null } } : c));
   }
 
+  async function handleAppIconUpload(file: File) {
+    setBusySlot("appIcon");
+    setError(null);
+    try {
+      const result = await uploadFile(file);
+      update("appIconUrl", result.url);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Upload gagal");
+    } finally {
+      setBusySlot(null);
+    }
+  }
+
+  function removeAppIcon() {
+    update("appIconUrl", null);
+  }
+
   function addStep() {
     setConfig((c) => (c ? { ...c, steps: [...c.steps, newStep()] } : c));
   }
@@ -297,7 +314,14 @@ export default function AdminDashboard() {
             <h1 className="font-display text-xl font-bold">Panel Kontrol</h1>
             <p className="text-xs text-white/60">Hanya kamu yang bisa lihat halaman ini.</p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <a
+              href="/preview"
+              target="_blank"
+              className="rounded-full bg-gold px-4 py-2 text-xs font-semibold text-skynight"
+            >
+              Preview
+            </a>
             <a
               href="/"
               target="_blank"
@@ -384,6 +408,61 @@ export default function AdminDashboard() {
               className="rounded-lg border border-white/25 bg-white/10 px-3 py-2 outline-none focus:border-gold"
             />
           </label>
+
+          <label className="mt-4 flex flex-col gap-1 text-sm">
+            Password halaman utama (opsional)
+            <input
+              type="text"
+              value={config.sitePassword ?? ""}
+              onChange={(e) => update("sitePassword", e.target.value || null)}
+              placeholder="Kosongkan kalau nggak perlu password"
+              className="rounded-lg border border-white/25 bg-white/10 px-3 py-2 outline-none focus:border-gold"
+            />
+            <span className="text-xs text-white/50">
+              Website tetap terkunci pakai hitung mundur sampai tanggal ulang tahun di atas.
+              Setelah waktunya tiba, kalau field ini diisi, dia harus masukin password ini dulu
+              buat masuk. Kosongkan supaya otomatis kebuka begitu waktunya tiba, tanpa password.
+            </span>
+          </label>
+
+          <div className="mt-4 flex items-center gap-4">
+            <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-2xl border border-white/25 bg-white/5">
+              {config.appIconUrl ? (
+                <Image src={config.appIconUrl} alt="Icon" fill className="object-cover" />
+              ) : (
+                <Image src="/icon-192.png" alt="Icon bawaan" fill className="object-cover" />
+              )}
+            </div>
+            <div className="flex flex-col gap-1">
+              <p className="text-sm">Icon buat "Add to Home Screen"</p>
+              <p className="text-xs text-white/50">
+                {config.appIconUrl ? "Pakai icon kustom" : "Pakai icon bawaan (bintang)"} — idealnya
+                gambar persegi, minimal 512x512px.
+              </p>
+              <div className="mt-1 flex gap-2">
+                <label className="cursor-pointer rounded-full border border-white/25 px-3 py-1.5 text-xs hover:bg-white/10">
+                  {busySlot === "appIcon" ? "..." : config.appIconUrl ? "Ganti" : "Upload"}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) handleAppIconUpload(file);
+                    }}
+                  />
+                </label>
+                {config.appIconUrl && (
+                  <button
+                    onClick={removeAppIcon}
+                    className="rounded-full border border-white/25 px-3 py-1.5 text-xs hover:bg-white/10"
+                  >
+                    Pakai bawaan lagi
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
         </section>
 
         {/* Editable texts & labels */}
@@ -398,7 +477,6 @@ export default function AdminDashboard() {
               [
                 { key: "heroEyebrow", label: "Label kecil di atas nama (hero)" },
                 { key: "heroButton", label: "Tombol scroll di hero" },
-                { key: "countdownEyebrow", label: "Label hitung mundur" },
                 { key: "stepsEyebrow", label: "Label section perjalanan" },
                 { key: "stepsHeading", label: "Judul section perjalanan" },
                 { key: "galleryEyebrow", label: "Label section galeri" },
