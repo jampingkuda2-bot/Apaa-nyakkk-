@@ -110,6 +110,33 @@ export default function AdminDashboard() {
     setConfig((c) => (c ? { ...c, [key]: value } : c));
   }
 
+  function updateText<K extends keyof SiteConfig["texts"]>(key: K, value: SiteConfig["texts"][K]) {
+    setConfig((c) => (c ? { ...c, texts: { ...c.texts, [key]: value } } : c));
+  }
+
+  function updateTextListItem(listKey: "introTeasers" | "sweetWordsList", index: number, value: string) {
+    setConfig((c) => {
+      if (!c) return c;
+      const list = [...c.texts[listKey]];
+      list[index] = value;
+      return { ...c, texts: { ...c.texts, [listKey]: list } };
+    });
+  }
+
+  function addTextListItem(listKey: "introTeasers" | "sweetWordsList") {
+    setConfig((c) =>
+      c ? { ...c, texts: { ...c.texts, [listKey]: [...c.texts[listKey], ""] } } : c
+    );
+  }
+
+  function removeTextListItem(listKey: "introTeasers" | "sweetWordsList", index: number) {
+    setConfig((c) => {
+      if (!c) return c;
+      const list = c.texts[listKey].filter((_, i) => i !== index);
+      return { ...c, texts: { ...c.texts, [listKey]: list } };
+    });
+  }
+
   function updateStep(id: string, patch: Partial<StepData>) {
     setConfig((c) =>
       c ? { ...c, steps: c.steps.map((s) => (s.id === id ? { ...s, ...patch } : s)) } : c
@@ -357,6 +384,136 @@ export default function AdminDashboard() {
               className="rounded-lg border border-white/25 bg-white/10 px-3 py-2 outline-none focus:border-gold"
             />
           </label>
+        </section>
+
+        {/* Editable texts & labels */}
+        <section className="glass rounded-2xl p-6">
+          <h2 className="font-display text-lg font-semibold">Teks & label</h2>
+          <p className="mt-1 text-xs text-white/60">
+            Ganti judul-judul kecil dan teks tombol yang muncul di berbagai bagian website.
+          </p>
+
+          <div className="mt-4 flex flex-col gap-5">
+            {(
+              [
+                { key: "heroEyebrow", label: "Label kecil di atas nama (hero)" },
+                { key: "heroButton", label: "Tombol scroll di hero" },
+                { key: "countdownEyebrow", label: "Label hitung mundur" },
+                { key: "stepsEyebrow", label: "Label section perjalanan" },
+                { key: "stepsHeading", label: "Judul section perjalanan" },
+                { key: "galleryEyebrow", label: "Label section galeri" },
+                { key: "galleryHeading", label: "Judul section galeri" },
+                { key: "videoEyebrow", label: "Label section video" },
+                { key: "videoHeading", label: "Judul section video" },
+                { key: "photoboothEyebrow", label: "Label section kamera" },
+                { key: "photoboothHeading", label: "Judul section kamera" },
+                { key: "messageEyebrow", label: "Label section pesan" },
+                { key: "messageHeading", label: "Judul section pesan" },
+                { key: "sweetWordsEyebrow", label: "Label section kata manis" },
+                { key: "sweetWordsHeading", label: "Judul section kata manis" },
+                { key: "spinEyebrow", label: "Label section roda putar" },
+                { key: "spinHeading", label: "Judul section roda putar" },
+                { key: "spinSubheading", label: "Sub-judul section roda putar" },
+                { key: "closingLetterLabel", label: "Label di atas surat penutup" },
+              ] as const
+            ).map(({ key, label }) => (
+              <label key={key} className="flex flex-col gap-1 text-sm">
+                {label}
+                <input
+                  value={config.texts[key]}
+                  onChange={(e) => updateText(key, e.target.value)}
+                  className="rounded-lg border border-white/25 bg-white/10 px-3 py-2 text-sm outline-none focus:border-gold"
+                />
+              </label>
+            ))}
+
+            <div>
+              <label className="flex flex-col gap-1 text-sm">
+                Eyebrow popup ucapan
+                <input
+                  value={config.texts.popupEyebrow}
+                  onChange={(e) => updateText("popupEyebrow", e.target.value)}
+                  className="rounded-lg border border-white/25 bg-white/10 px-3 py-2 text-sm outline-none focus:border-gold"
+                />
+              </label>
+              <label className="mt-3 flex flex-col gap-1 text-sm">
+                Pesan di popup ucapan
+                <textarea
+                  value={config.texts.popupMessage}
+                  onChange={(e) => updateText("popupMessage", e.target.value)}
+                  rows={3}
+                  className="rounded-lg border border-white/25 bg-white/10 px-3 py-2 text-sm outline-none focus:border-gold"
+                />
+              </label>
+            </div>
+          </div>
+
+          {/* Intro teaser lines */}
+          <div className="mt-6 border-t border-white/10 pt-4">
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-semibold">Teaser di gerbang pembuka</p>
+              <button
+                onClick={() => addTextListItem("introTeasers")}
+                className="rounded-full bg-gold px-3 py-1 text-xs font-semibold text-skynight"
+              >
+                + Tambah baris
+              </button>
+            </div>
+            <p className="mt-1 text-xs text-white/60">
+              Baris-baris teks yang muncul bergantian sebelum bintangnya bisa diketuk.
+            </p>
+            <div className="mt-3 flex flex-col gap-2">
+              {config.texts.introTeasers.map((line, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <input
+                    value={line}
+                    onChange={(e) => updateTextListItem("introTeasers", i, e.target.value)}
+                    className="w-full rounded-lg border border-white/25 bg-white/10 px-3 py-2 text-sm outline-none focus:border-gold"
+                  />
+                  <button
+                    onClick={() => removeTextListItem("introTeasers", i)}
+                    className="shrink-0 text-xs text-red-300 hover:text-red-200"
+                  >
+                    Hapus
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Sweet words list */}
+          <div className="mt-6 border-t border-white/10 pt-4">
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-semibold">Daftar kata-kata manis</p>
+              <button
+                onClick={() => addTextListItem("sweetWordsList")}
+                className="rounded-full bg-gold px-3 py-1 text-xs font-semibold text-skynight"
+              >
+                + Tambah kata-kata
+              </button>
+            </div>
+            <p className="mt-1 text-xs text-white/60">
+              Muncul acak tiap dia tekan tombol "Kasih kata-kata manis lagi".
+            </p>
+            <div className="mt-3 flex flex-col gap-2">
+              {config.texts.sweetWordsList.map((line, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <textarea
+                    value={line}
+                    onChange={(e) => updateTextListItem("sweetWordsList", i, e.target.value)}
+                    rows={2}
+                    className="w-full rounded-lg border border-white/25 bg-white/10 px-3 py-2 text-sm outline-none focus:border-gold"
+                  />
+                  <button
+                    onClick={() => removeTextListItem("sweetWordsList", i)}
+                    className="shrink-0 text-xs text-red-300 hover:text-red-200"
+                  >
+                    Hapus
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
         </section>
 
         {/* Steps */}
