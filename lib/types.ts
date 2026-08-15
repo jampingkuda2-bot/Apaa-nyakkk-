@@ -118,6 +118,8 @@ export type SiteConfig = {
   closingLetter: string;
   sounds: SoundPack;
   texts: SiteTexts;
+  sitePassword: string | null;
+  appIconUrl: string | null;
 };
 
 export const GALLERY_SLOTS = 10;
@@ -161,6 +163,8 @@ export const DEFAULT_CONFIG: SiteConfig = {
     "Kalau kamu baca ini sampai sini, makasih ya udah mau pelan-pelan buka semuanya. Aku nggak selalu jago ngomongin perasaan langsung, jadi mungkin ini cara aku yang agak muter buat bilang: aku sayang kamu, dan aku bersyukur banget ada kamu. Selamat ulang tahun.",
   sounds: { ...DEFAULT_SOUNDS },
   texts: { ...DEFAULT_TEXTS, introTeasers: [...DEFAULT_TEXTS.introTeasers], sweetWordsList: [...DEFAULT_TEXTS.sweetWordsList] },
+  sitePassword: null,
+  appIconUrl: null,
 };
 
 // Old saved configs may have fewer gallery/video slots than the current
@@ -257,6 +261,12 @@ export function normalizeConfig(data: Partial<SiteConfig>): SiteConfig {
     spinSubheading: str("spinSubheading"),
     closingLetterLabel: str("closingLetterLabel"),
   };
+
+  const rawSitePassword = (data as { sitePassword?: unknown }).sitePassword;
+  merged.sitePassword = typeof rawSitePassword === "string" && rawSitePassword.trim() ? rawSitePassword : null;
+
+  const rawIconUrl = (data as { appIconUrl?: unknown }).appIconUrl;
+  merged.appIconUrl = typeof rawIconUrl === "string" && rawIconUrl.trim() ? rawIconUrl : null;
 
   return merged;
 }
