@@ -55,7 +55,7 @@ export default function Experience({ config }: { config: SiteConfig }) {
           transition={{ duration: 0.8 }}
           className="font-mono text-xs uppercase tracking-[0.4em] text-blush/80"
         >
-          Untuk seseorang di langitku
+          {config.texts.heroEyebrow}
         </motion.span>
 
         <motion.h1
@@ -84,14 +84,14 @@ export default function Experience({ config }: { config: SiteConfig }) {
           onClick={scrollToSteps}
           className="mt-10 rounded-full border border-white/50 bg-white/10 px-8 py-3 font-body text-sm text-white backdrop-blur transition-colors duration-200 hover:bg-white/20"
         >
-          Ayo, buka pelan-pelan ↓
+          {config.texts.heroButton}
         </motion.button>
       </section>
 
       {/* Countdown + together counter */}
       <section className="relative flex flex-col items-center gap-14 px-6 py-14">
         <div className="flex flex-col items-center gap-4">
-          <span className="font-mono text-xs uppercase tracking-[0.3em] text-gold">Menuju hari-H</span>
+          <span className="font-mono text-xs uppercase tracking-[0.3em] text-gold">{config.texts.countdownEyebrow}</span>
           <Countdown birthdayDate={config.birthdayDate} recipientName={config.recipientName} />
         </div>
 
@@ -101,9 +101,9 @@ export default function Experience({ config }: { config: SiteConfig }) {
       {/* Steps */}
       <section id="perjalanan" className="relative py-10">
         <div className="mx-auto max-w-2xl px-6 text-center">
-          <span className="font-mono text-xs uppercase tracking-[0.3em] text-gold">Perjalanan kita</span>
+          <span className="font-mono text-xs uppercase tracking-[0.3em] text-gold">{config.texts.stepsEyebrow}</span>
           <h2 className="mt-3 font-display text-3xl font-bold text-white text-shadow-soft sm:text-4xl">
-            Ini semua masih aku inget jelas
+            {config.texts.stepsHeading}
           </h2>
         </div>
         <StepJourney steps={config.steps} />
@@ -113,9 +113,9 @@ export default function Experience({ config }: { config: SiteConfig }) {
       {galleryItems.length > 0 && (
         <section className="relative py-16">
           <div className="mx-auto max-w-2xl px-6 text-center">
-            <span className="font-mono text-xs uppercase tracking-[0.3em] text-gold">Galeri</span>
+            <span className="font-mono text-xs uppercase tracking-[0.3em] text-gold">{config.texts.galleryEyebrow}</span>
             <h2 className="mt-3 font-display text-3xl font-bold text-white text-shadow-soft sm:text-4xl">
-              Beberapa kenangan lain juga
+              {config.texts.galleryHeading}
             </h2>
           </div>
           <div className="mt-10">
@@ -128,9 +128,9 @@ export default function Experience({ config }: { config: SiteConfig }) {
       {videoItems.length > 0 && (
         <section className="relative py-16">
           <div className="mx-auto max-w-2xl px-6 text-center">
-            <span className="font-mono text-xs uppercase tracking-[0.3em] text-gold">Video</span>
+            <span className="font-mono text-xs uppercase tracking-[0.3em] text-gold">{config.texts.videoEyebrow}</span>
             <h2 className="mt-3 font-display text-3xl font-bold text-white text-shadow-soft sm:text-4xl">
-              Ini ga cukup kalau cuma difoto
+              {config.texts.videoHeading}
             </h2>
           </div>
           <div className="mt-10">
@@ -141,9 +141,9 @@ export default function Experience({ config }: { config: SiteConfig }) {
 
       {/* Photo booth */}
       <section className="relative flex flex-col items-center px-6 py-16">
-        <span className="font-mono text-xs uppercase tracking-[0.3em] text-gold">Balik dong</span>
+        <span className="font-mono text-xs uppercase tracking-[0.3em] text-gold">{config.texts.photoboothEyebrow}</span>
         <h2 className="mt-3 max-w-sm text-center font-display text-3xl font-bold text-white text-shadow-soft sm:text-4xl">
-          Kirim satu senyum buat aku
+          {config.texts.photoboothHeading}
         </h2>
         <div className="mt-10 w-full">
           <PhotoBooth sounds={config.sounds} />
@@ -152,9 +152,9 @@ export default function Experience({ config }: { config: SiteConfig }) {
 
       {/* Written reply */}
       <section className="relative flex flex-col items-center px-6 py-16">
-        <span className="font-mono text-xs uppercase tracking-[0.3em] text-gold">Atau</span>
+        <span className="font-mono text-xs uppercase tracking-[0.3em] text-gold">{config.texts.messageEyebrow}</span>
         <h2 className="mt-3 max-w-sm text-center font-display text-3xl font-bold text-white text-shadow-soft sm:text-4xl">
-          Tulis aja balasannya
+          {config.texts.messageHeading}
         </h2>
         <div className="mt-10 w-full">
           <MessageBox sounds={config.sounds} />
@@ -163,23 +163,23 @@ export default function Experience({ config }: { config: SiteConfig }) {
 
       {/* Sweet words */}
       <section className="relative flex flex-col items-center px-6 py-16">
-        <span className="font-mono text-xs uppercase tracking-[0.3em] text-gold">Bonus</span>
+        <span className="font-mono text-xs uppercase tracking-[0.3em] text-gold">{config.texts.sweetWordsEyebrow}</span>
         <h2 className="mt-3 max-w-sm text-center font-display text-3xl font-bold text-white text-shadow-soft sm:text-4xl">
-          Butuh disemangatin dikit?
+          {config.texts.sweetWordsHeading}
         </h2>
         <div className="mt-10 w-full">
-          <SweetWords />
+          <SweetWords words={config.texts.sweetWordsList} />
         </div>
       </section>
 
       {/* Spin wheel */}
       <section className="relative flex flex-col items-center px-6 py-24">
-        <span className="font-mono text-xs uppercase tracking-[0.3em] text-gold">Buat kamu</span>
+        <span className="font-mono text-xs uppercase tracking-[0.3em] text-gold">{config.texts.spinEyebrow}</span>
         <h2 className="mt-3 max-w-lg text-center font-display text-3xl font-bold text-white text-shadow-soft sm:text-4xl">
-          Giliran kamu sekarang, puter bintangnya
+          {config.texts.spinHeading}
         </h2>
         <p className="mt-3 max-w-sm text-center text-sm text-white/75">
-          Sekali puter, satu kejutan buat kamu.
+          {config.texts.spinSubheading}
         </p>
         <div className="mt-12">
           <SpinWheel prizes={config.prizes} sounds={config.sounds} />
@@ -190,7 +190,7 @@ export default function Experience({ config }: { config: SiteConfig }) {
       <section className="relative px-6 py-16">
         <div className="glass mx-auto max-w-lg rounded-3xl px-8 py-10">
           <span className="font-mono text-xs uppercase tracking-[0.3em] text-gold">
-            Sebelum kamu tutup ini
+            {config.texts.closingLetterLabel}
           </span>
           <p className="mt-4 whitespace-pre-line text-[15px] leading-relaxed text-white/85">
             {config.closingLetter}
