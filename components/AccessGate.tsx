@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import InstallButton from "./InstallButton";
 
 function getTargetDate(mmdd: string): Date {
   const [month, day] = mmdd.split("-").map(Number);
@@ -90,6 +91,8 @@ export default function AccessGate({
 
   return (
     <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden bg-skynight px-6 text-center">
+      <InstallButton />
+
       <p className="font-mono text-xs uppercase tracking-[0.3em] text-white/50">
         Kejutan ini masih terkunci
       </p>
