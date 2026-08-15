@@ -8,9 +8,9 @@ export default async function manifest(): Promise<MetadataRoute.Manifest> {
   const customType = ext === "jpg" || ext === "jpeg" ? "image/jpeg" : ext === "webp" ? "image/webp" : "image/png";
 
   return {
-    name: `Untuk ${config.recipientName}`,
-    short_name: `Untuk ${config.recipientName}`,
-    description: "Sebuah langit penuh kejutan, untukmu.",
+    name: config.siteTitle,
+    short_name: config.siteTitle,
+    description: "Sebuah kejutan kecil, buka pelan-pelan ya.",
     start_url: "/",
     display: "standalone",
     background_color: "#123A5E",
