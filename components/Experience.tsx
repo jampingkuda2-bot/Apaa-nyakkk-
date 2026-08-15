@@ -7,7 +7,6 @@ import SpinWheel from "./SpinWheel";
 import Gallery from "./Gallery";
 import PhotoBooth from "./PhotoBooth";
 import MessageBox from "./MessageBox";
-import Countdown from "./Countdown";
 import TogetherCounter from "./TogetherCounter";
 import SweetWords from "./SweetWords";
 import { SiteConfig } from "@/lib/types";
@@ -88,15 +87,12 @@ export default function Experience({ config }: { config: SiteConfig }) {
         </motion.button>
       </section>
 
-      {/* Countdown + together counter */}
-      <section className="relative flex flex-col items-center gap-14 px-6 py-14">
-        <div className="flex flex-col items-center gap-4">
-          <span className="font-mono text-xs uppercase tracking-[0.3em] text-gold">{config.texts.countdownEyebrow}</span>
-          <Countdown birthdayDate={config.birthdayDate} recipientName={config.recipientName} />
-        </div>
-
-        {config.togetherSinceDate && <TogetherCounter sinceDate={config.togetherSinceDate} />}
-      </section>
+      {/* Together counter (countdown moved to the access lock screen) */}
+      {config.togetherSinceDate && (
+        <section className="relative flex flex-col items-center px-6 py-14">
+          <TogetherCounter sinceDate={config.togetherSinceDate} />
+        </section>
+      )}
 
       {/* Steps */}
       <section id="perjalanan" className="relative py-10">
