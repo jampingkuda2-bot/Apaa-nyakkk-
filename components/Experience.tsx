@@ -119,7 +119,7 @@ export default function Experience({ config }: { config: SiteConfig }) {
             </h2>
           </div>
           <div className="mt-10">
-            <Gallery items={galleryItems} />
+            <Gallery items={galleryItems} sounds={config.sounds} />
           </div>
         </section>
       )}
@@ -134,7 +134,7 @@ export default function Experience({ config }: { config: SiteConfig }) {
             </h2>
           </div>
           <div className="mt-10">
-            <Gallery items={videoItems} />
+            <Gallery items={videoItems} sounds={config.sounds} />
           </div>
         </section>
       )}
@@ -146,7 +146,7 @@ export default function Experience({ config }: { config: SiteConfig }) {
           Kirim satu senyum buat aku
         </h2>
         <div className="mt-10 w-full">
-          <PhotoBooth />
+          <PhotoBooth sounds={config.sounds} />
         </div>
       </section>
 
@@ -157,7 +157,7 @@ export default function Experience({ config }: { config: SiteConfig }) {
           Tulis aja balasannya
         </h2>
         <div className="mt-10 w-full">
-          <MessageBox />
+          <MessageBox sounds={config.sounds} />
         </div>
       </section>
 
@@ -182,7 +182,7 @@ export default function Experience({ config }: { config: SiteConfig }) {
           Sekali puter, satu kejutan buat kamu.
         </p>
         <div className="mt-12">
-          <SpinWheel prizes={config.prizes} />
+          <SpinWheel prizes={config.prizes} sounds={config.sounds} />
         </div>
       </section>
 
