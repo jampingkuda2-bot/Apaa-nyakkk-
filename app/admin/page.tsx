@@ -21,6 +21,17 @@ async function uploadFile(file: File): Promise<{ url: string; type: "image" | "v
   return { url: blob.url, type: isVideo ? "video" : "image" };
 }
 
+async function uploadAudioFile(file: File): Promise<string> {
+  if (file.size > 10 * 1024 * 1024) {
+    throw new Error("Ukuran audio maksimal 10MB.");
+  }
+  const blob = await upload(file.name, file, {
+    access: "public",
+    handleUploadUrl: "/api/admin/upload",
+  });
+  return blob.url;
+}
+
 function newStep(): StepData {
   return {
     id: `step-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
@@ -170,6 +181,23 @@ export default function AdminDashboard() {
       videos[index] = null;
       return { ...c, videos };
     });
+  }
+
+  async function handleSoundUpload(key: keyof SiteConfig["sounds"], file: File) {
+    setBusySlot(`sound-${key}`);
+    setError(null);
+    try {
+      const url = await uploadAudioFile(file);
+      setConfig((c) => (c ? { ...c, sounds: { ...c.sounds, [key]: url } } : c));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Upload gagal");
+    } finally {
+      setBusySlot(null);
+    }
+  }
+
+  function removeSound(key: keyof SiteConfig["sounds"]) {
+    setConfig((c) => (c ? { ...c, sounds: { ...c.sounds, [key]: null } } : c));
   }
 
   function addStep() {
@@ -569,6 +597,65 @@ export default function AdminDashboard() {
                 className="w-20 rounded-lg border border-white/25 bg-white/10 px-3 py-2 text-center text-sm outline-none focus:border-gold"
               />
             </label>
+          </div>
+        </section>
+
+        {/* Sound effects */}
+        <section className="glass rounded-2xl p-6">
+          <h2 className="font-display text-lg font-semibold">Suara (SFX)</h2>
+          <p className="mt-1 text-xs text-white/60">
+            Upload file MP3/WAV sendiri kalau mau ganti suara bawaan (yang sekarang dibikin
+            otomatis dari kode). Kosongkan slotnya kalau mau pakai suara bawaan lagi.
+          </p>
+
+          <div className="mt-4 flex flex-col gap-3">
+            {(
+              [
+                { key: "tapBlip", label: "Ketukan bintang" },
+                { key: "chime", label: "Chime pembuka (pas gerbang kebuka)" },
+                { key: "wheelTick", label: "Tik-tik roda muter" },
+                { key: "winJingle", label: "Jingle menang / terkirim" },
+                { key: "whoosh", label: "Whoosh buka galeri" },
+              ] as const
+            ).map(({ key, label }) => {
+              const url = config.sounds[key];
+              const slotKey = `sound-${key}`;
+              return (
+                <div
+                  key={key}
+                  className="flex items-center justify-between gap-3 rounded-xl border border-white/15 bg-white/5 p-3"
+                >
+                  <div className="min-w-0">
+                    <p className="text-sm">{label}</p>
+                    <p className="mt-0.5 text-xs text-white/50">
+                      {url ? "MP3 kustom terpasang" : "Pakai suara bawaan"}
+                    </p>
+                  </div>
+                  <div className="flex shrink-0 gap-2">
+                    <label className="cursor-pointer rounded-full border border-white/25 px-3 py-1.5 text-xs hover:bg-white/10">
+                      {busySlot === slotKey ? "..." : url ? "Ganti" : "Upload"}
+                      <input
+                        type="file"
+                        accept="audio/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handleSoundUpload(key, file);
+                        }}
+                      />
+                    </label>
+                    {url && (
+                      <button
+                        onClick={() => removeSound(key)}
+                        className="rounded-full border border-white/25 px-3 py-1.5 text-xs hover:bg-white/10"
+                      >
+                        Hapus
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </section>
 
