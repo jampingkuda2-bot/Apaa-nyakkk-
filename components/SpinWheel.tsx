@@ -3,11 +3,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { createAudioContext, scheduleWheelTicks, scheduleWinJingle } from "@/lib/sound";
+import { playCustomSound, scheduleCustomTicks } from "@/lib/customAudio";
 import { vibrate } from "@/lib/haptics";
 import { getOrCreateDeviceId, getDeviceFingerprint } from "@/lib/device";
-import { Prize } from "@/lib/types";
+import { Prize, SoundPack } from "@/lib/types";
 
-const PALETTE = ["#A7E0FB", "#F6C453", "#FFD6E0", "#5FB2E8", "#2E74B5"];
+const PALETTE = ["#A7E0FB", "#F582AE", "#FFD6E0", "#5FB2E8", "#2E74B5"];
 
 function polarToCartesian(cx: number, cy: number, r: number, angleDeg: number) {
   const rad = ((angleDeg - 90) * Math.PI) / 180;
@@ -21,7 +22,7 @@ function arcPath(cx: number, cy: number, r: number, startAngle: number, endAngle
   return `M ${cx} ${cy} L ${start.x} ${start.y} A ${r} ${r} 0 ${largeArc} 0 ${end.x} ${end.y} Z`;
 }
 
-export default function SpinWheel({ prizes }: { prizes: Prize[] }) {
+export default function SpinWheel({ prizes, sounds }: { prizes: Prize[]; sounds?: SoundPack }) {
   const labels = useMemo(() => prizes.map((p) => p.label), [prizes]);
   const n = labels.length;
   const segmentAngle = 360 / n;
@@ -37,6 +38,9 @@ export default function SpinWheel({ prizes }: { prizes: Prize[] }) {
   const fingerprintRef = useRef<string>("");
 
   const SPIN_DURATION = 4.2;
+  // Internal coordinate system for the SVG — the rendered size is
+  // controlled responsively via CSS below, this just needs to stay fixed
+  // for the arc/label math.
   const size = 320;
   const radius = size / 2;
 
@@ -119,12 +123,26 @@ export default function SpinWheel({ prizes }: { prizes: Prize[] }) {
     rotationRef.current = newRotation;
     setRotation(newRotation);
 
-    if (!audioCtxRef.current) audioCtxRef.current = createAudioContext();
-    const ctx = audioCtxRef.current;
-    if (ctx) {
-      ctx.resume();
-      scheduleWheelTicks(ctx, 0, SPIN_DURATION);
-      scheduleWinJingle(ctx, SPIN_DURATION);
+    if (sounds?.wheelTick) {
+      scheduleCustomTicks(sounds.wheelTick, SPIN_DURATION);
+    } else {
+      if (!audioCtxRef.current) audioCtxRef.current = createAudioContext();
+      const ctx = audioCtxRef.current;
+      if (ctx) {
+        ctx.resume();
+        scheduleWheelTicks(ctx, 0, SPIN_DURATION);
+      }
+    }
+
+    if (sounds?.winJingle) {
+      window.setTimeout(() => playCustomSound(sounds.winJingle as string), SPIN_DURATION * 1000);
+    } else {
+      if (!audioCtxRef.current) audioCtxRef.current = createAudioContext();
+      const ctx = audioCtxRef.current;
+      if (ctx) {
+        ctx.resume();
+        scheduleWinJingle(ctx, SPIN_DURATION);
+      }
     }
     vibrate(12);
 
@@ -138,20 +156,19 @@ export default function SpinWheel({ prizes }: { prizes: Prize[] }) {
 
   return (
     <div className="flex flex-col items-center gap-8">
-      <div className="relative" style={{ width: size, height: size }}>
+      <div className="relative mx-auto aspect-square w-full max-w-[300px]">
         <div className="absolute left-1/2 -top-3 z-20 -translate-x-1/2">
           <svg width="28" height="34" viewBox="0 0 28 34" fill="none">
-            <path d="M14 34L0 6C0 2.68629 2.68629 0 6 0H22C25.3137 0 28 2.68629 28 6L14 34Z" fill="#F6C453" />
+            <path d="M14 34L0 6C0 2.68629 2.68629 0 6 0H22C25.3137 0 28 2.68629 28 6L14 34Z" fill="#F582AE" />
           </svg>
         </div>
 
         <motion.div
           animate={{ rotate: rotation }}
           transition={{ duration: 4.2, ease: [0.12, 0.67, 0.1, 1] }}
-          style={{ width: size, height: size }}
-          className="rounded-full shadow-[0_0_60px_rgba(246,196,83,0.35)] ring-4 ring-white/70"
+          className="h-full w-full rounded-full shadow-[0_0_60px_rgba(245,130,174,0.35)] ring-4 ring-white/70"
         >
-          <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+          <svg width="100%" height="100%" viewBox={`0 0 ${size} ${size}`}>
             {segments.map((seg, i) => (
               <path key={i} d={seg.path} fill={seg.color} stroke="#ffffff" strokeWidth="2" />
             ))}
@@ -175,7 +192,7 @@ export default function SpinWheel({ prizes }: { prizes: Prize[] }) {
                 </text>
               );
             })}
-            <circle cx={radius} cy={radius} r={radius * 0.16} fill="#123A5E" stroke="#F6C453" strokeWidth="3" />
+            <circle cx={radius} cy={radius} r={radius * 0.16} fill="#123A5E" stroke="#F582AE" strokeWidth="3" />
           </svg>
         </motion.div>
       </div>
@@ -183,7 +200,7 @@ export default function SpinWheel({ prizes }: { prizes: Prize[] }) {
       <button
         onClick={handleSpin}
         disabled={spinning || n === 0}
-        className="rounded-full bg-gold px-10 py-3.5 font-display text-lg font-semibold text-skynight shadow-lg transition hover:brightness-105 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
+        className="rounded-full bg-gold px-10 py-3.5 font-display text-lg font-semibold text-skynight shadow-lg transition-transform duration-150 hover:brightness-105 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
       >
         {spinning ? "Berputar..." : "Putar sekarang"}
       </button>
