@@ -2,11 +2,13 @@
 
 import { useRef, useState } from "react";
 import { createAudioContext, scheduleWinJingle } from "@/lib/sound";
+import { playCustomSound } from "@/lib/customAudio";
 import { vibrate } from "@/lib/haptics";
+import { SoundPack } from "@/lib/types";
 
 type Status = "idle" | "sending" | "sent" | "error";
 
-export default function MessageBox() {
+export default function MessageBox({ sounds }: { sounds?: SoundPack }) {
   const [text, setText] = useState("");
   const [status, setStatus] = useState<Status>("idle");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -27,11 +29,15 @@ export default function MessageBox() {
       setStatus("sent");
       setText("");
 
-      if (!audioCtxRef.current) audioCtxRef.current = createAudioContext();
-      const ctx = audioCtxRef.current;
-      if (ctx) {
-        ctx.resume();
-        scheduleWinJingle(ctx, 0);
+      if (sounds?.winJingle) {
+        playCustomSound(sounds.winJingle);
+      } else {
+        if (!audioCtxRef.current) audioCtxRef.current = createAudioContext();
+        const ctx = audioCtxRef.current;
+        if (ctx) {
+          ctx.resume();
+          scheduleWinJingle(ctx, 0);
+        }
       }
       vibrate([25, 40, 25, 40, 70]);
     } catch (e) {
