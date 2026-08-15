@@ -343,6 +343,20 @@ export default function AdminDashboard() {
         {/* Basic info */}
         <section className="glass rounded-2xl p-6">
           <h2 className="font-display text-lg font-semibold">Info dasar</h2>
+
+          <label className="mt-4 flex flex-col gap-1 text-sm">
+            Judul tab browser / nama saat "Add to Home Screen"
+            <input
+              value={config.siteTitle}
+              onChange={(e) => update("siteTitle", e.target.value)}
+              className="rounded-lg border border-white/25 bg-white/10 px-3 py-2 outline-none focus:border-gold"
+            />
+            <span className="text-xs text-amber-300">
+              Hindari nama lengkap di sini — ini kelihatan di tab browser, riwayat, dan preview
+              link sebelum dia sempat buka websitenya, jadi bisa bocorin kejutannya duluan.
+            </span>
+          </label>
+
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             <label className="flex flex-col gap-1 text-sm">
               Nama penerima
