@@ -1,5 +1,6 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Playfair_Display, Great_Vibes, Poppins, IBM_Plex_Mono } from "next/font/google";
+import { getConfig } from "@/lib/blob";
 import "./globals.css";
 
 const display = Playfair_Display({
@@ -23,9 +24,31 @@ const mono = IBM_Plex_Mono({
   variable: "--font-mono",
 });
 
-export const metadata: Metadata = {
-  title: "Untuk Angel ✨",
-  description: "Sebuah langit penuh kejutan, untukmu.",
+export async function generateMetadata(): Promise<Metadata> {
+  const config = await getConfig();
+  const icon = config.appIconUrl || "/icon-192.png";
+
+  return {
+    title: `Untuk ${config.recipientName} ✨`,
+    description: "Sebuah langit penuh kejutan, untukmu.",
+    manifest: "/manifest.webmanifest",
+    appleWebApp: {
+      capable: true,
+      statusBarStyle: "black-translucent",
+      title: `Untuk ${config.recipientName}`,
+    },
+    icons: {
+      icon: [
+        { url: icon, sizes: "192x192" },
+        { url: config.appIconUrl || "/icon-512.png", sizes: "512x512" },
+      ],
+      apple: [{ url: icon, sizes: "192x192" }],
+    },
+  };
+}
+
+export const viewport: Viewport = {
+  themeColor: "#123A5E",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
