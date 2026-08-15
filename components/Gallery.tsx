@@ -3,21 +3,26 @@
 import { useRef, useState } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { MediaItem } from "@/lib/types";
+import { MediaItem, SoundPack } from "@/lib/types";
 import { createAudioContext, playWhoosh } from "@/lib/sound";
+import { playCustomSound } from "@/lib/customAudio";
 
-export default function Gallery({ items }: { items: MediaItem[] }) {
+export default function Gallery({ items, sounds }: { items: MediaItem[]; sounds?: SoundPack }) {
   const [active, setActive] = useState<MediaItem | null>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
 
   if (items.length === 0) return null;
 
   function openItem(item: MediaItem) {
-    if (!audioCtxRef.current) audioCtxRef.current = createAudioContext();
-    const ctx = audioCtxRef.current;
-    if (ctx) {
-      ctx.resume();
-      playWhoosh(ctx);
+    if (sounds?.whoosh) {
+      playCustomSound(sounds.whoosh, 0.6);
+    } else {
+      if (!audioCtxRef.current) audioCtxRef.current = createAudioContext();
+      const ctx = audioCtxRef.current;
+      if (ctx) {
+        ctx.resume();
+        playWhoosh(ctx);
+      }
     }
     setActive(item);
   }
