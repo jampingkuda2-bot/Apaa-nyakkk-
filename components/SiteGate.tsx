@@ -35,6 +35,7 @@ export default function SiteGate({ config }: { config: SiteConfig }) {
             recipientName={config.recipientName}
             onOpen={handleGateOpened}
             sounds={config.sounds}
+            teasers={config.texts.introTeasers}
           />
         )}
 
@@ -71,6 +72,8 @@ export default function SiteGate({ config }: { config: SiteConfig }) {
           <BirthdayPopup
             recipientName={config.recipientName}
             onClose={() => setShowPopup(false)}
+            eyebrow={config.texts.popupEyebrow}
+            message={config.texts.popupMessage}
           />
         )}
       </AnimatePresence>
