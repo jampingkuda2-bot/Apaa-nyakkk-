@@ -31,6 +31,79 @@ export const DEFAULT_SOUNDS: SoundPack = {
   whoosh: null,
 };
 
+export type SiteTexts = {
+  heroEyebrow: string;
+  heroButton: string;
+  introTeasers: string[];
+  popupEyebrow: string;
+  popupMessage: string;
+  countdownEyebrow: string;
+  stepsEyebrow: string;
+  stepsHeading: string;
+  galleryEyebrow: string;
+  galleryHeading: string;
+  videoEyebrow: string;
+  videoHeading: string;
+  photoboothEyebrow: string;
+  photoboothHeading: string;
+  messageEyebrow: string;
+  messageHeading: string;
+  sweetWordsEyebrow: string;
+  sweetWordsHeading: string;
+  sweetWordsList: string[];
+  spinEyebrow: string;
+  spinHeading: string;
+  spinSubheading: string;
+  closingLetterLabel: string;
+};
+
+export const DEFAULT_TEXTS: SiteTexts = {
+  heroEyebrow: "Untuk seseorang di langitku",
+  heroButton: "Ayo, buka pelan-pelan ↓",
+  introTeasers: [
+    "Psstt~ sayaaang...",
+    "Sebelooom kamu lanjuttt,",
+    "ada sesuatuuu yang udah aku siapin diam-diam loh 👀",
+    "tapi ga segampang itu bukanyaaa...",
+    "kamu kudu bantuin aku dulu yaaa~",
+  ],
+  popupEyebrow: "Hari ini spesial",
+  popupMessage: "Semoga tahun ini banyak hal baik dateng ke kamu. Masih ada kejutan lain nunggu di bawah.",
+  countdownEyebrow: "Menuju hari-H",
+  stepsEyebrow: "Perjalanan kita",
+  stepsHeading: "Ini semua masih aku inget jelas",
+  galleryEyebrow: "Galeri",
+  galleryHeading: "Beberapa kenangan lain juga",
+  videoEyebrow: "Video",
+  videoHeading: "Ini ga cukup kalau cuma difoto",
+  photoboothEyebrow: "Balik dong",
+  photoboothHeading: "Kirim satu senyum buat aku",
+  messageEyebrow: "Atau",
+  messageHeading: "Tulis aja balasannya",
+  sweetWordsEyebrow: "Bonus",
+  sweetWordsHeading: "Butuh disemangatin dikit?",
+  sweetWordsList: [
+    "Kamu tuh entah kenapa selalu bikin hari yang biasa aja jadi mendingan.",
+    "Aku tuh suka banget sama cara kamu ketawa, walau kamu sendiri suka gak sadar.",
+    "Semoga kamu selalu dikelilingi orang-orang yang sayang kamu sebanyak aku sayang kamu.",
+    "Kadang aku mikir, untung banget ya waktu itu kita ketemu.",
+    "Kamu itu capek boleh, nyerah jangan.",
+    "Aku gak butuh alasan buat sayang kamu, tapi kalau dipaksa nyari, bakal kepanjangan.",
+    "Semoga apapun yang lagi kamu khawatirin, pelan-pelan ketemu jalan keluarnya.",
+    "Kamu pantas dapet hal-hal baik, jangan lupain itu.",
+    "Aku suka versi kamu yang lagi jadi diri sendiri, bukan yang lagi capek jadi kuat.",
+    "Kalau kamu lagi ngerasa kurang, inget aku selalu ngerasa kamu udah lebih dari cukup.",
+    "Makasih ya udah bertahan sejauh ini, aku bangga sama kamu.",
+    "Semoga tahun ini kamu lebih sering ketawa daripada nahan air mata.",
+    "Kamu itu rumah paling nyaman yang pernah aku temuin.",
+    "Pelan-pelan aja, gak semua harus buru-buru, aku nungguin kamu.",
+  ],
+  spinEyebrow: "Buat kamu",
+  spinHeading: "Giliran kamu sekarang, puter bintangnya",
+  spinSubheading: "Sekali puter, satu kejutan buat kamu.",
+  closingLetterLabel: "Sebelum kamu tutup ini",
+};
+
 export type SiteConfig = {
   recipientName: string;
   senderName: string;
@@ -44,6 +117,7 @@ export type SiteConfig = {
   togetherSinceDate: string | null; // "YYYY-MM-DD" or null to hide the counter
   closingLetter: string;
   sounds: SoundPack;
+  texts: SiteTexts;
 };
 
 export const GALLERY_SLOTS = 10;
@@ -86,6 +160,7 @@ export const DEFAULT_CONFIG: SiteConfig = {
   closingLetter:
     "Kalau kamu baca ini sampai sini, makasih ya udah mau pelan-pelan buka semuanya. Aku nggak selalu jago ngomongin perasaan langsung, jadi mungkin ini cara aku yang agak muter buat bilang: aku sayang kamu, dan aku bersyukur banget ada kamu. Selamat ulang tahun.",
   sounds: { ...DEFAULT_SOUNDS },
+  texts: { ...DEFAULT_TEXTS, introTeasers: [...DEFAULT_TEXTS.introTeasers], sweetWordsList: [...DEFAULT_TEXTS.sweetWordsList] },
 };
 
 // Old saved configs may have fewer gallery/video slots than the current
@@ -142,6 +217,45 @@ export function normalizeConfig(data: Partial<SiteConfig>): SiteConfig {
     wheelTick: typeof soundsObj.wheelTick === "string" ? soundsObj.wheelTick : null,
     winJingle: typeof soundsObj.winJingle === "string" ? soundsObj.winJingle : null,
     whoosh: typeof soundsObj.whoosh === "string" ? soundsObj.whoosh : null,
+  };
+
+  const rawTexts = (data as { texts?: unknown }).texts;
+  const textsObj = rawTexts && typeof rawTexts === "object" ? (rawTexts as Record<string, unknown>) : {};
+  const str = (key: keyof SiteTexts): string =>
+    typeof textsObj[key] === "string" && (textsObj[key] as string).trim()
+      ? (textsObj[key] as string)
+      : (DEFAULT_TEXTS[key] as string);
+
+  merged.texts = {
+    heroEyebrow: str("heroEyebrow"),
+    heroButton: str("heroButton"),
+    introTeasers:
+      Array.isArray(textsObj.introTeasers) && textsObj.introTeasers.length > 0
+        ? (textsObj.introTeasers as string[])
+        : [...DEFAULT_TEXTS.introTeasers],
+    popupEyebrow: str("popupEyebrow"),
+    popupMessage: str("popupMessage"),
+    countdownEyebrow: str("countdownEyebrow"),
+    stepsEyebrow: str("stepsEyebrow"),
+    stepsHeading: str("stepsHeading"),
+    galleryEyebrow: str("galleryEyebrow"),
+    galleryHeading: str("galleryHeading"),
+    videoEyebrow: str("videoEyebrow"),
+    videoHeading: str("videoHeading"),
+    photoboothEyebrow: str("photoboothEyebrow"),
+    photoboothHeading: str("photoboothHeading"),
+    messageEyebrow: str("messageEyebrow"),
+    messageHeading: str("messageHeading"),
+    sweetWordsEyebrow: str("sweetWordsEyebrow"),
+    sweetWordsHeading: str("sweetWordsHeading"),
+    sweetWordsList:
+      Array.isArray(textsObj.sweetWordsList) && textsObj.sweetWordsList.length > 0
+        ? (textsObj.sweetWordsList as string[])
+        : [...DEFAULT_TEXTS.sweetWordsList],
+    spinEyebrow: str("spinEyebrow"),
+    spinHeading: str("spinHeading"),
+    spinSubheading: str("spinSubheading"),
+    closingLetterLabel: str("closingLetterLabel"),
   };
 
   return merged;
