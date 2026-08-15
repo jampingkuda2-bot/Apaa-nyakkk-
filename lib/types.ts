@@ -120,6 +120,7 @@ export type SiteConfig = {
   texts: SiteTexts;
   sitePassword: string | null;
   appIconUrl: string | null;
+  siteTitle: string;
 };
 
 export const GALLERY_SLOTS = 10;
@@ -165,6 +166,7 @@ export const DEFAULT_CONFIG: SiteConfig = {
   texts: { ...DEFAULT_TEXTS, introTeasers: [...DEFAULT_TEXTS.introTeasers], sweetWordsList: [...DEFAULT_TEXTS.sweetWordsList] },
   sitePassword: null,
   appIconUrl: null,
+  siteTitle: "Sebuah Kejutan ✨",
 };
 
 // Old saved configs may have fewer gallery/video slots than the current
@@ -267,6 +269,9 @@ export function normalizeConfig(data: Partial<SiteConfig>): SiteConfig {
 
   const rawIconUrl = (data as { appIconUrl?: unknown }).appIconUrl;
   merged.appIconUrl = typeof rawIconUrl === "string" && rawIconUrl.trim() ? rawIconUrl : null;
+
+  const rawTitle = (data as { siteTitle?: unknown }).siteTitle;
+  merged.siteTitle = typeof rawTitle === "string" && rawTitle.trim() ? rawTitle : DEFAULT_CONFIG.siteTitle;
 
   return merged;
 }
