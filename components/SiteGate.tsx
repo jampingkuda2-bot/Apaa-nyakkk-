@@ -34,6 +34,7 @@ export default function SiteGate({ config }: { config: SiteConfig }) {
             key="intro"
             recipientName={config.recipientName}
             onOpen={handleGateOpened}
+            sounds={config.sounds}
           />
         )}
 
