@@ -29,13 +29,13 @@ export async function generateMetadata(): Promise<Metadata> {
   const icon = config.appIconUrl || "/icon-192.png";
 
   return {
-    title: `Untuk ${config.recipientName} ✨`,
-    description: "Sebuah langit penuh kejutan, untukmu.",
+    title: config.siteTitle,
+    description: "Sebuah kejutan kecil, buka pelan-pelan ya.",
     manifest: "/manifest.webmanifest",
     appleWebApp: {
       capable: true,
       statusBarStyle: "black-translucent",
-      title: `Untuk ${config.recipientName}`,
+      title: config.siteTitle,
     },
     icons: {
       icon: [
