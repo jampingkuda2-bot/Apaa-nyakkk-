@@ -2,8 +2,8 @@
 
 import { motion } from "framer-motion";
 
-const CONFETTI_COLORS = ["#F6C453", "#FFD6E0", "#8FD3F4", "#4FA9E0", "#FFFFFF"];
-const BALLOON_COLORS = ["#F6C453", "#FFD6E0", "#8FD3F4"];
+const CONFETTI_COLORS = ["#F582AE", "#FFD6E0", "#8FD3F4", "#4FA9E0", "#FFFFFF"];
+const BALLOON_COLORS = ["#F582AE", "#FFD6E0", "#8FD3F4"];
 
 function ConfettiPiece({
   left,
@@ -66,7 +66,7 @@ function Sparkle({ top, left, delay, size }: { top: string; left: string; delay:
       width={size}
       height={size}
       viewBox="0 0 24 24"
-      fill="#F6C453"
+      fill="#F582AE"
       className="absolute"
       style={{ top, left }}
       animate={{ opacity: [0, 1, 0], scale: [0.4, 1, 0.4], rotate: [0, 90] }}
@@ -80,9 +80,13 @@ function Sparkle({ top, left, delay, size }: { top: string; left: string; delay:
 export default function BirthdayPopup({
   recipientName,
   onClose,
+  eyebrow,
+  message,
 }: {
   recipientName: string;
   onClose: () => void;
+  eyebrow: string;
+  message: string;
 }) {
   return (
     <motion.div
@@ -114,7 +118,7 @@ export default function BirthdayPopup({
         initial={{ scale: 0.6, opacity: 0, y: 20 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
         transition={{ type: "spring", stiffness: 200, damping: 16, delay: 0.2 }}
-        className="glass relative z-10 max-w-sm overflow-visible rounded-3xl px-8 py-10 text-center shadow-[0_0_80px_rgba(246,196,83,0.25)]"
+        className="glass relative z-10 max-w-sm overflow-visible rounded-3xl px-8 py-10 text-center shadow-[0_0_80px_rgba(245, 130, 174,0.25)]"
       >
         <Sparkle top="-6%" left="8%" delay={0} size={18} />
         <Sparkle top="-2%" left="82%" delay={0.6} size={14} />
@@ -130,26 +134,26 @@ export default function BirthdayPopup({
         </motion.div>
 
         <p className="mt-4 font-mono text-xs uppercase tracking-[0.3em] text-gold">
-          Hari ini spesial
+          {eyebrow}
         </p>
         <h2 className="mt-3 font-display text-2xl font-bold text-white text-shadow-soft sm:text-3xl">
           Selamat Ulang Tahun,
         </h2>
         <motion.p
-          animate={{ textShadow: ["0 0 20px rgba(246,196,83,0.3)", "0 0 40px rgba(246,196,83,0.6)", "0 0 20px rgba(246,196,83,0.3)"] }}
+          animate={{ textShadow: ["0 0 20px rgba(245, 130, 174,0.3)", "0 0 40px rgba(245, 130, 174,0.6)", "0 0 20px rgba(245, 130, 174,0.3)"] }}
           transition={{ duration: 2.4, repeat: Infinity }}
           className="mt-1 font-script text-5xl text-white"
         >
           {recipientName}
         </motion.p>
         <p className="mt-4 text-sm leading-relaxed text-white/80">
-          Semoga tahun ini banyak hal baik dateng ke kamu. Masih ada kejutan lain nunggu di bawah.
+          {message}
         </p>
 
         <motion.button
           onClick={onClose}
           whileTap={{ scale: 0.93 }}
-          animate={{ boxShadow: ["0 0 0px rgba(246,196,83,0.4)", "0 0 24px rgba(246,196,83,0.6)", "0 0 0px rgba(246,196,83,0.4)"] }}
+          animate={{ boxShadow: ["0 0 0px rgba(245, 130, 174,0.4)", "0 0 24px rgba(245, 130, 174,0.6)", "0 0 0px rgba(245, 130, 174,0.4)"] }}
           transition={{ boxShadow: { duration: 2, repeat: Infinity } }}
           className="mt-6 rounded-full bg-gold px-8 py-3 font-display font-semibold text-skynight"
         >
