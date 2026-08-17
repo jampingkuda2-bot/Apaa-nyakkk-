@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getConfig } from "@/lib/blob";
+import { getConfigSafe } from "@/lib/blob";
 import { getSpinsData, saveSpinsData, SpinRecord } from "@/lib/spins";
 import { sendEmail, parseDevice } from "@/lib/email";
 
@@ -17,7 +17,7 @@ function pickWeightedIndex(weights: number[]): number {
 }
 
 export async function GET(req: NextRequest) {
-  const config = await getConfig();
+  const config = await getConfigSafe();
   const { searchParams } = new URL(req.url);
   const deviceId = searchParams.get("deviceId") || "";
   const fingerprint = searchParams.get("fp") || "";
@@ -32,7 +32,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const config = await getConfig();
+  const config = await getConfigSafe();
   if (!config.prizes || config.prizes.length === 0) {
     return NextResponse.json({ error: "Belum ada hadiah yang diatur." }, { status: 400 });
   }
