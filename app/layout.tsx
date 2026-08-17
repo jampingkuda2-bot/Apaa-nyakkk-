@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Playfair_Display, Great_Vibes, Poppins, IBM_Plex_Mono } from "next/font/google";
-import { getConfig } from "@/lib/blob";
+import { getConfigSafe } from "@/lib/blob";
 import "./globals.css";
 
 const display = Playfair_Display({
@@ -25,7 +25,7 @@ const mono = IBM_Plex_Mono({
 });
 
 export async function generateMetadata(): Promise<Metadata> {
-  const config = await getConfig();
+  const config = await getConfigSafe();
   const icon = config.appIconUrl || "/icon-192.png";
 
   return {
