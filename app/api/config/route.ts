@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { getConfig } from "@/lib/blob";
+import { getConfigSafe } from "@/lib/blob";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const config = await getConfig();
+  const config = await getConfigSafe();
   return NextResponse.json(config);
 }
