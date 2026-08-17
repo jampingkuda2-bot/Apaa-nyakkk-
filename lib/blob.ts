@@ -4,14 +4,33 @@ import { DEFAULT_CONFIG, SiteConfig, normalizeConfig } from "./types";
 const CONFIG_PATH = "data/config.json";
 
 export async function getConfig(): Promise<SiteConfig> {
+  const { blobs } = await list({ prefix: CONFIG_PATH, limit: 1 });
+  const match = blobs.find((b) => b.pathname === CONFIG_PATH);
+  // No config has ever been saved yet — this is a legitimate first-run state.
+  if (!match) return DEFAULT_CONFIG;
+
+  // A config exists but we failed to read/parse it — this is NOT a normal
+  // state, so we throw instead of silently returning defaults. Silently
+  // falling back here previously let a transient fetch failure look like
+  // "no data", which an admin could then accidentally save over real data.
+  const res = await fetch(match.url, { cache: "no-store" });
+  if (!res.ok) {
+    throw new Error(`Gagal mengambil data tersimpan (status ${res.status}).`);
+  }
+  const data = (await res.json()) as Partial<SiteConfig>;
+  return normalizeConfig(data);
+}
+
+/**
+ * Same as getConfig(), but never throws — falls back to DEFAULT_CONFIG on
+ * any failure instead. Use this ONLY where the caller must never crash
+ * (public-facing pages/APIs that real visitors hit). Anywhere the admin
+ * is reading data to edit/save, use getConfig() directly so failures are
+ * visible instead of silently masked.
+ */
+export async function getConfigSafe(): Promise<SiteConfig> {
   try {
-    const { blobs } = await list({ prefix: CONFIG_PATH, limit: 1 });
-    const match = blobs.find((b) => b.pathname === CONFIG_PATH);
-    if (!match) return DEFAULT_CONFIG;
-    const res = await fetch(match.url, { cache: "no-store" });
-    if (!res.ok) return DEFAULT_CONFIG;
-    const data = (await res.json()) as Partial<SiteConfig>;
-    return normalizeConfig(data);
+    return await getConfig();
   } catch (err) {
     console.error("getConfig failed, falling back to default:", err);
     return DEFAULT_CONFIG;
