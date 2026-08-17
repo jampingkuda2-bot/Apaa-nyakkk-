@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { DEFAULT_CONFIG, GALLERY_SLOTS, VIDEO_SLOTS, SiteConfig, StepData, normalizeConfig } from "@/lib/types";
+import { GALLERY_SLOTS, VIDEO_SLOTS, SiteConfig, StepData, normalizeConfig } from "@/lib/types";
 import type { SpinsData } from "@/lib/spins";
 
 import { upload } from "@vercel/blob/client";
@@ -45,6 +45,7 @@ export default function AdminDashboard() {
   const router = useRouter();
   const [config, setConfig] = useState<SiteConfig | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [savedAt, setSavedAt] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -60,12 +61,25 @@ export default function AdminDashboard() {
   } | null>(null);
   const [summaryLoading, setSummaryLoading] = useState(true);
 
-  useEffect(() => {
+  function loadConfig() {
+    setLoading(true);
+    setLoadError(null);
     fetch("/api/admin/config")
-      .then((r) => r.json())
-      .then((data) => setConfig(normalizeConfig(data)))
-      .catch(() => setConfig(DEFAULT_CONFIG))
+      .then(async (r) => {
+        const data = await r.json().catch(() => ({}));
+        if (!r.ok) {
+          throw new Error(data.error || "Gagal mengambil data tersimpan.");
+        }
+        setConfig(normalizeConfig(data));
+      })
+      .catch((e) => {
+        setLoadError(e instanceof Error ? e.message : "Gagal mengambil data tersimpan.");
+      })
       .finally(() => setLoading(false));
+  }
+
+  useEffect(() => {
+    loadConfig();
 
     loadSpinsData();
 
@@ -98,10 +112,31 @@ export default function AdminDashboard() {
     }
   }
 
-  if (loading || !config) {
+  if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-skynight text-white/70">
         Memuat panel...
+      </div>
+    );
+  }
+
+  if (loadError || !config) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-skynight px-6 text-center text-white">
+        <p className="font-display text-lg font-semibold">Gagal memuat data</p>
+        <p className="max-w-md break-words rounded-xl bg-white/10 px-4 py-3 font-mono text-xs text-white/80">
+          {loadError || "Data tidak diketahui."}
+        </p>
+        <p className="max-w-sm text-xs text-amber-300">
+          Sengaja gak ditampilin form kosong di sini, biar kamu gak nyimpen data kosong nimpa yang
+          udah ada. Coba muat ulang.
+        </p>
+        <button
+          onClick={loadConfig}
+          className="mt-2 rounded-full bg-gold px-6 py-2.5 text-sm font-semibold text-skynight"
+        >
+          Coba lagi
+        </button>
       </div>
     );
   }
@@ -508,511 +543,4 @@ export default function AdminDashboard() {
                 { key: "spinSubheading", label: "Sub-judul section roda putar" },
                 { key: "closingLetterLabel", label: "Label di atas surat penutup" },
               ] as const
-            ).map(({ key, label }) => (
-              <label key={key} className="flex flex-col gap-1 text-sm">
-                {label}
-                <input
-                  value={config.texts[key]}
-                  onChange={(e) => updateText(key, e.target.value)}
-                  className="rounded-lg border border-white/25 bg-white/10 px-3 py-2 text-sm outline-none focus:border-gold"
-                />
-              </label>
-            ))}
-
-            <div>
-              <label className="flex flex-col gap-1 text-sm">
-                Eyebrow popup ucapan
-                <input
-                  value={config.texts.popupEyebrow}
-                  onChange={(e) => updateText("popupEyebrow", e.target.value)}
-                  className="rounded-lg border border-white/25 bg-white/10 px-3 py-2 text-sm outline-none focus:border-gold"
-                />
-              </label>
-              <label className="mt-3 flex flex-col gap-1 text-sm">
-                Pesan di popup ucapan
-                <textarea
-                  value={config.texts.popupMessage}
-                  onChange={(e) => updateText("popupMessage", e.target.value)}
-                  rows={3}
-                  className="rounded-lg border border-white/25 bg-white/10 px-3 py-2 text-sm outline-none focus:border-gold"
-                />
-              </label>
-            </div>
-          </div>
-
-          {/* Intro teaser lines */}
-          <div className="mt-6 border-t border-white/10 pt-4">
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-semibold">Teaser di gerbang pembuka</p>
-              <button
-                onClick={() => addTextListItem("introTeasers")}
-                className="rounded-full bg-gold px-3 py-1 text-xs font-semibold text-skynight"
-              >
-                + Tambah baris
-              </button>
-            </div>
-            <p className="mt-1 text-xs text-white/60">
-              Baris-baris teks yang muncul bergantian sebelum bintangnya bisa diketuk.
-            </p>
-            <div className="mt-3 flex flex-col gap-2">
-              {config.texts.introTeasers.map((line, i) => (
-                <div key={i} className="flex items-center gap-2">
-                  <input
-                    value={line}
-                    onChange={(e) => updateTextListItem("introTeasers", i, e.target.value)}
-                    className="w-full rounded-lg border border-white/25 bg-white/10 px-3 py-2 text-sm outline-none focus:border-gold"
-                  />
-                  <button
-                    onClick={() => removeTextListItem("introTeasers", i)}
-                    className="shrink-0 text-xs text-red-300 hover:text-red-200"
-                  >
-                    Hapus
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Sweet words list */}
-          <div className="mt-6 border-t border-white/10 pt-4">
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-semibold">Daftar kata-kata manis</p>
-              <button
-                onClick={() => addTextListItem("sweetWordsList")}
-                className="rounded-full bg-gold px-3 py-1 text-xs font-semibold text-skynight"
-              >
-                + Tambah kata-kata
-              </button>
-            </div>
-            <p className="mt-1 text-xs text-white/60">
-              Muncul acak tiap dia tekan tombol "Kasih kata-kata manis lagi".
-            </p>
-            <div className="mt-3 flex flex-col gap-2">
-              {config.texts.sweetWordsList.map((line, i) => (
-                <div key={i} className="flex items-center gap-2">
-                  <textarea
-                    value={line}
-                    onChange={(e) => updateTextListItem("sweetWordsList", i, e.target.value)}
-                    rows={2}
-                    className="w-full rounded-lg border border-white/25 bg-white/10 px-3 py-2 text-sm outline-none focus:border-gold"
-                  />
-                  <button
-                    onClick={() => removeTextListItem("sweetWordsList", i)}
-                    className="shrink-0 text-xs text-red-300 hover:text-red-200"
-                  >
-                    Hapus
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Steps */}
-        <section className="glass rounded-2xl p-6">
-          <div className="flex items-center justify-between">
-            <h2 className="font-display text-lg font-semibold">Langkah perjalanan</h2>
-            <button
-              onClick={addStep}
-              className="rounded-full bg-gold px-4 py-1.5 text-xs font-semibold text-skynight"
-            >
-              + Tambah langkah
-            </button>
-          </div>
-
-          <div className="mt-4 flex flex-col gap-6">
-            {config.steps.map((step, i) => (
-              <div key={step.id} className="rounded-xl border border-white/15 bg-white/5 p-4">
-                <div className="flex items-center justify-between">
-                  <span className="font-mono text-xs text-gold">Langkah {i + 1}</span>
-                  <button
-                    onClick={() => removeStep(step.id)}
-                    className="text-xs text-red-300 hover:text-red-200"
-                  >
-                    Hapus
-                  </button>
-                </div>
-
-                <input
-                  value={step.title}
-                  onChange={(e) => updateStep(step.id, { title: e.target.value })}
-                  placeholder="Judul langkah"
-                  className="mt-3 w-full rounded-lg border border-white/25 bg-white/10 px-3 py-2 text-sm outline-none focus:border-gold"
-                />
-                <textarea
-                  value={step.message}
-                  onChange={(e) => updateStep(step.id, { message: e.target.value })}
-                  placeholder="Pesan untuk langkah ini"
-                  rows={3}
-                  className="mt-2 w-full rounded-lg border border-white/25 bg-white/10 px-3 py-2 text-sm outline-none focus:border-gold"
-                />
-
-                <div className="mt-3 flex items-center gap-4">
-                  {step.photoUrl ? (
-                    <div className="relative h-20 w-16 overflow-hidden rounded-lg border border-white/30">
-                      <Image src={step.photoUrl} alt="" fill className="object-cover" />
-                    </div>
-                  ) : (
-                    <div className="flex h-20 w-16 items-center justify-center rounded-lg border border-dashed border-white/30 text-[10px] text-white/50">
-                      Kosong
-                    </div>
-                  )}
-                  <label className="cursor-pointer rounded-full border border-white/25 px-3 py-1.5 text-xs hover:bg-white/10">
-                    {busySlot === step.id ? "Mengunggah..." : "Ganti foto"}
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) handleStepPhoto(step.id, file);
-                      }}
-                    />
-                  </label>
-                  {step.photoUrl && (
-                    <button
-                      onClick={() => updateStep(step.id, { photoUrl: null })}
-                      className="text-xs text-white/50 hover:text-white"
-                    >
-                      Hapus foto
-                    </button>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* Gallery (photos only) */}
-        <section className="glass rounded-2xl p-6">
-          <h2 className="font-display text-lg font-semibold">Galeri foto ({GALLERY_SLOTS} slot)</h2>
-          <p className="mt-1 text-xs text-white/60">
-            Slot kosong tidak akan muncul di website. Isi sesuka hati, 6–10 foto juga bisa.
-          </p>
-          <div className="mt-4 grid grid-cols-3 gap-3 sm:grid-cols-5">
-            {config.gallery.map((item, i) => (
-              <div key={i} className="flex flex-col items-center gap-1.5">
-                <div className="relative aspect-square w-full overflow-hidden rounded-lg border border-white/20 bg-white/5">
-                  {item ? (
-                    <Image src={item.url} alt="" fill className="object-cover" />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center text-[10px] text-white/40">
-                      Slot {i + 1}
-                    </div>
-                  )}
-                </div>
-                <div className="flex gap-1">
-                  <label className="cursor-pointer rounded-full border border-white/25 px-2 py-1 text-[10px] hover:bg-white/10">
-                    {busySlot === `gallery-${i}` ? "..." : item ? "Ganti" : "Isi"}
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) handleGalleryPhoto(i, file);
-                      }}
-                    />
-                  </label>
-                  {item && (
-                    <button
-                      onClick={() => removeGalleryPhoto(i)}
-                      className="rounded-full border border-white/25 px-2 py-1 text-[10px] hover:bg-white/10"
-                    >
-                      Hapus
-                    </button>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* Videos (separate from photo gallery) */}
-        <section className="glass rounded-2xl p-6">
-          <h2 className="font-display text-lg font-semibold">Video kenangan ({VIDEO_SLOTS} slot)</h2>
-          <p className="mt-1 text-xs text-white/60">
-            Khusus video (mp4/mov), auto-play tanpa suara di website. Maks 150MB per video.
-          </p>
-          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
-            {config.videos.map((item, i) => (
-              <div key={i} className="flex flex-col items-center gap-1.5">
-                <div className="relative aspect-square w-full overflow-hidden rounded-lg border border-white/20 bg-white/5">
-                  {item ? (
-                    <video
-                      src={item.url}
-                      className="h-full w-full object-cover"
-                      muted
-                      loop
-                      autoPlay
-                      playsInline
-                    />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center text-[10px] text-white/40">
-                      Video {i + 1}
-                    </div>
-                  )}
-                </div>
-                <div className="flex gap-1">
-                  <label className="cursor-pointer rounded-full border border-white/25 px-2 py-1 text-[10px] hover:bg-white/10">
-                    {busySlot === `video-${i}` ? "..." : item ? "Ganti" : "Isi"}
-                    <input
-                      type="file"
-                      accept="video/*"
-                      className="hidden"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) handleVideoFile(i, file);
-                      }}
-                    />
-                  </label>
-                  {item && (
-                    <button
-                      onClick={() => removeVideo(i)}
-                      className="rounded-full border border-white/25 px-2 py-1 text-[10px] hover:bg-white/10"
-                    >
-                      Hapus
-                    </button>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* Prizes */}
-        <section className="glass rounded-2xl p-6">
-          <div className="flex items-center justify-between">
-            <h2 className="font-display text-lg font-semibold">Hadiah roda putar</h2>
-            <button
-              onClick={addPrize}
-              className="rounded-full bg-gold px-4 py-1.5 text-xs font-semibold text-skynight"
-            >
-              + Tambah hadiah
-            </button>
-          </div>
-          <p className="mt-1 text-xs text-white/60">
-            Angka "rate" itu bobot peluang, bukan persen langsung — makin gede angkanya dibanding
-            hadiah lain, makin sering dia keluar. Semua rate sama = peluangnya rata.
-          </p>
-          <div className="mt-4 flex flex-col gap-2">
-            {config.prizes.map((prize, i) => {
-              const totalWeight = config.prizes.reduce((sum, p) => sum + Math.max(0, p.weight), 0);
-              const pct = totalWeight > 0 ? Math.round((Math.max(0, prize.weight) / totalWeight) * 100) : 0;
-              return (
-                <div key={i} className="flex items-center gap-2">
-                  <input
-                    value={prize.label}
-                    onChange={(e) => updatePrizeLabel(i, e.target.value)}
-                    className="w-full rounded-lg border border-white/25 bg-white/10 px-3 py-2 text-sm outline-none focus:border-gold"
-                  />
-                  <input
-                    type="number"
-                    min={0}
-                    step={1}
-                    value={prize.weight}
-                    onChange={(e) => updatePrizeWeight(i, Math.max(0, Number(e.target.value) || 0))}
-                    className="w-16 shrink-0 rounded-lg border border-white/25 bg-white/10 px-2 py-2 text-center text-sm outline-none focus:border-gold"
-                    aria-label="Rate"
-                  />
-                  <span className="w-10 shrink-0 text-right text-[11px] text-white/50">{pct}%</span>
-                  <button
-                    onClick={() => removePrize(i)}
-                    className="shrink-0 text-xs text-red-300 hover:text-red-200"
-                  >
-                    Hapus
-                  </button>
-                </div>
-              );
-            })}
-          </div>
-          {config.prizes.length < 2 && (
-            <p className="mt-2 text-xs text-amber-300">Minimal isi 2 hadiah supaya roda bisa berputar.</p>
-          )}
-
-          <div className="mt-5 border-t border-white/10 pt-4">
-            <label className="flex items-center justify-between gap-3 text-sm">
-              <span>
-                Batas maksimal putaran
-                <span className="block text-xs text-white/50">per alamat IP / jaringan</span>
-              </span>
-              <input
-                type="number"
-                min={1}
-                value={config.maxSpinsPerIp}
-                onChange={(e) =>
-                  update("maxSpinsPerIp", Math.max(1, Number(e.target.value) || 1))
-                }
-                className="w-20 rounded-lg border border-white/25 bg-white/10 px-3 py-2 text-center text-sm outline-none focus:border-gold"
-              />
-            </label>
-          </div>
-        </section>
-
-        {/* Sound effects */}
-        <section className="glass rounded-2xl p-6">
-          <h2 className="font-display text-lg font-semibold">Suara (SFX)</h2>
-          <p className="mt-1 text-xs text-white/60">
-            Upload file MP3/WAV sendiri kalau mau ganti suara bawaan (yang sekarang dibikin
-            otomatis dari kode). Kosongkan slotnya kalau mau pakai suara bawaan lagi.
-          </p>
-
-          <div className="mt-4 flex flex-col gap-3">
-            {(
-              [
-                { key: "tapBlip", label: "Ketukan bintang" },
-                { key: "chime", label: "Chime pembuka (pas gerbang kebuka)" },
-                { key: "wheelTick", label: "Tik-tik roda muter" },
-                { key: "winJingle", label: "Jingle menang / terkirim" },
-                { key: "whoosh", label: "Whoosh buka galeri" },
-              ] as const
-            ).map(({ key, label }) => {
-              const url = config.sounds[key];
-              const slotKey = `sound-${key}`;
-              return (
-                <div
-                  key={key}
-                  className="flex items-center justify-between gap-3 rounded-xl border border-white/15 bg-white/5 p-3"
-                >
-                  <div className="min-w-0">
-                    <p className="text-sm">{label}</p>
-                    <p className="mt-0.5 text-xs text-white/50">
-                      {url ? "MP3 kustom terpasang" : "Pakai suara bawaan"}
-                    </p>
-                  </div>
-                  <div className="flex shrink-0 gap-2">
-                    <label className="cursor-pointer rounded-full border border-white/25 px-3 py-1.5 text-xs hover:bg-white/10">
-                      {busySlot === slotKey ? "..." : url ? "Ganti" : "Upload"}
-                      <input
-                        type="file"
-                        accept="audio/*"
-                        className="hidden"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) handleSoundUpload(key, file);
-                        }}
-                      />
-                    </label>
-                    {url && (
-                      <button
-                        onClick={() => removeSound(key)}
-                        className="rounded-full border border-white/25 px-3 py-1.5 text-xs hover:bg-white/10"
-                      >
-                        Hapus
-                      </button>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </section>
-
-        {/* Spin data management */}
-        <section className="glass rounded-2xl p-6">
-          <div className="flex items-center justify-between">
-            <h2 className="font-display text-lg font-semibold">Kelola data spin</h2>
-            <button
-              onClick={() => resetSpins()}
-              disabled={resettingIp !== null}
-              className="rounded-full border border-red-300/50 px-4 py-1.5 text-xs font-semibold text-red-300 hover:bg-red-300/10 disabled:opacity-50"
-            >
-              {resettingIp === "__all__" ? "Mereset..." : "Reset semua"}
-            </button>
-          </div>
-          <p className="mt-1 text-xs text-white/60">
-            Ini daftar perangkat yang sudah pernah mutar roda (dideteksi dari perangkatnya, bukan
-            IP, jadi ganti jaringan wifi tetap kehitung sama), beserta sisa jatahnya. Reset kalau
-            mau kasih dia jatah putaran baru.
-          </p>
-
-          <div className="mt-4 flex flex-col gap-2">
-            {spinsLoading && <p className="text-sm text-white/50">Memuat...</p>}
-
-            {!spinsLoading && spinsData?.byDevice && Object.keys(spinsData.byDevice).length === 0 && (
-              <p className="text-sm text-white/50">Belum ada yang pernah mutar roda.</p>
-            )}
-
-            {!spinsLoading &&
-              spinsData?.byDevice &&
-              Object.entries(spinsData.byDevice).map(([key, entry]) => {
-                const last = entry.history[entry.history.length - 1];
-                return (
-                  <div
-                    key={key}
-                    className="flex items-center justify-between gap-3 rounded-xl border border-white/15 bg-white/5 p-3"
-                  >
-                    <div className="min-w-0">
-                      <p className="text-xs text-white/80">{last?.device || "Perangkat tidak dikenal"}</p>
-                      <p className="mt-0.5 truncate font-mono text-[10px] text-white/40">{key}</p>
-                      <p className="mt-0.5 text-xs text-white/50">
-                        {entry.count} kali dipakai
-                        {last ? ` · terakhir: ${last.prize} (${last.time})` : ""}
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => resetSpins(key)}
-                      disabled={resettingIp !== null}
-                      className="shrink-0 rounded-full border border-white/25 px-3 py-1.5 text-xs hover:bg-white/10 disabled:opacity-50"
-                    >
-                      {resettingIp === key ? "..." : "Reset"}
-                    </button>
-                  </div>
-                );
-              })}
-          </div>
-        </section>
-
-        {/* Activity summary */}
-        <section className="glass rounded-2xl p-6">
-          <h2 className="font-display text-lg font-semibold">Ringkasan aktivitas</h2>
-          {summaryLoading && <p className="mt-3 text-sm text-white/50">Memuat...</p>}
-          {!summaryLoading && summary && (
-            <div className="mt-4 grid grid-cols-2 gap-3">
-              <div className="rounded-xl border border-white/15 bg-white/5 p-4 text-center">
-                <p className="font-display text-2xl font-bold text-gold">{summary.totalVisits}</p>
-                <p className="mt-1 text-xs text-white/60">kali website dibuka</p>
-              </div>
-              <div className="rounded-xl border border-white/15 bg-white/5 p-4 text-center">
-                <p className="font-display text-2xl font-bold text-gold">{summary.totalSpins}</p>
-                <p className="mt-1 text-xs text-white/60">total putaran roda</p>
-              </div>
-              <div className="rounded-xl border border-white/15 bg-white/5 p-4 text-center">
-                <p className="font-display text-2xl font-bold text-gold">{summary.uniqueDevicesSpun}</p>
-                <p className="mt-1 text-xs text-white/60">perangkat pernah mutar</p>
-              </div>
-              <div className="flex flex-col items-center justify-center rounded-xl border border-white/15 bg-white/5 p-4 text-center">
-                <p className="text-xs text-white/60">Terakhir dibuka</p>
-                <p className="mt-1 text-xs text-white/80">
-                  {summary.lastVisit ? `${summary.lastVisit.device} · ${summary.lastVisit.time}` : "-"}
-                </p>
-              </div>
-            </div>
-          )}
-        </section>
-      </div>
-
-      {/* Save bar */}
-      <div className="fixed inset-x-0 bottom-0 z-20 border-t border-white/10 bg-skynight/95 px-6 py-4 backdrop-blur">
-        <div className="mx-auto flex max-w-3xl items-center justify-between">
-          <div className="text-xs text-white/60">
-            {error ? (
-              <span className="text-red-300">{error}</span>
-            ) : savedAt ? (
-              `Tersimpan pukul ${savedAt}`
-            ) : (
-              "Perubahan belum disimpan"
-            )}
-          </div>
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="rounded-full bg-gold px-8 py-2.5 font-semibold text-skynight disabled:opacity-60"
-          >
-            {saving ? "Menyimpan..." : "Simpan perubahan"}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
+  
