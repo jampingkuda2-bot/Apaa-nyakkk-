@@ -5,8 +5,14 @@ import { SiteConfig } from "@/lib/types";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const config = await getConfig();
-  return NextResponse.json(config);
+  try {
+    const config = await getConfig();
+    return NextResponse.json(config);
+  } catch (err) {
+    console.error("admin GET config failed:", err);
+    const message = err instanceof Error ? err.message : "Gagal mengambil data tersimpan.";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
 }
 
 export async function POST(req: NextRequest) {
