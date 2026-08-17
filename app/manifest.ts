@@ -1,8 +1,8 @@
 import type { MetadataRoute } from "next";
-import { getConfig } from "@/lib/blob";
+import { getConfigSafe } from "@/lib/blob";
 
 export default async function manifest(): Promise<MetadataRoute.Manifest> {
-  const config = await getConfig();
+  const config = await getConfigSafe();
   const customIcon = config.appIconUrl;
   const ext = customIcon?.split(".").pop()?.toLowerCase();
   const customType = ext === "jpg" || ext === "jpeg" ? "image/jpeg" : ext === "webp" ? "image/webp" : "image/png";
